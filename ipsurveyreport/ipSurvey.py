@@ -546,12 +546,7 @@ def plotStrip(bp, at, ps, crop):
 
 
 def shoreline(ps):
-    """
-    .. function:: shoreline()
-    Geodataframe containing shorelines to draw as a layer on the chart.
-    :param ps:
-    :return:
-    """
+#     Geodataframe containing shorelines to draw as a layer on the chart.
     dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
                              r'\181112_eagle\NOAAShorelineDataExplorer'
                              r'\NSDE61619\CUSPLine.shp'),
