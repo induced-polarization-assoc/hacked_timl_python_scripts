@@ -4,6 +4,8 @@ Created on Thu Jun 28 10:50:36 2018
 
 @author: TimL
 """
+#  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
+
 import os
 import pickle
 import commonSense as cs

@@ -4,6 +4,8 @@ Created on Mon May 14 16:31:21 2018
 
 @author: TimL
 '''
+#  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
+
 import os
 import matplotlib.pyplot as plt
 import scipy as sp

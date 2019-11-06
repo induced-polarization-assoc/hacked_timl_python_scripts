@@ -1,8 +1,10 @@
+#!/bin/env python3
+# ipdataplot/ipSurvey.py
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 22 16:08:57 2018
 
-@author: TimL
+@author: TimL, modified by jjr
 """
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 

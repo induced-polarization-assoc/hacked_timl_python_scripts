@@ -4,6 +4,8 @@ Created on Thu Oct 18 15:57:16 2018
 
 @author: TimL
 """
+#  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
+
 import os
 import matplotlib.pyplot as plt
 import artificialRaw as ar

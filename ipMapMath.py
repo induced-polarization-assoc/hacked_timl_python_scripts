@@ -4,6 +4,8 @@ Created on Fri May 25 15:57:31 2018
 
 @author: TimL
 """
+#  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
+
 import scipy as sp
 from scipy import linalg as linalg
 import commonSense as cs
