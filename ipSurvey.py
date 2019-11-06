@@ -43,7 +43,7 @@ def ipSurvey():
 
     crop = True
     # FIXME: change this to the file to open.
-    ps.folderPath = mipgui.file_dialogs.dir_to_scan()
+    ps.folderPath = mipgui.file_dialogs.print_input_path(os.getcwd())
     print(f"Opening the files in {ps.folderPath} for analysis...")
     # ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
     folderName = cs.lastName(ps.folderPath)
@@ -104,7 +104,7 @@ def ipSurvey():
     colMax = 5.5  # /(2*sp.pi*4)
 
     # Whether to plot line segments and points along the survey track.
-    ps.showLines = False
+    ps.showLines = True
 
     # Whehter to save polygon and line shape files.
     ps.saveShape = False
