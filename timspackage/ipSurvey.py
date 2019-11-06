@@ -19,8 +19,6 @@ from shapely.geometry import Polygon as polygon
 from cartopy import crs as ccrs
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import mipgui.file_dialogs
-
 
 class fileClass:
     pass
@@ -42,19 +40,12 @@ def ipSurvey():
     ps.saveTxt = False
 
     crop = True
-    # FIXME: change this to the file to open.
-    ps.folderPath = mipgui.file_dialogs.dir_to_scan()
-    print(f"Opening the files in {ps.folderPath} for analysis...")
-    # ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
+
+    ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
     folderName = cs.lastName(ps.folderPath)
 
     # Processed result choice.
-    # FIXME:  Make this an option with a popup window
     loadThis = 'zAnyF'
-
-    # TODO: Add a routine in utilities that checks that the values of parsed data for navigation are REAL and finite
-    # TODO:  If the values are not real, ask the user if this file should be skipped with a tkinter messagebox.
-    # TODO:  Add a dialog box that asks the user which files to open for navigational data processing.
 
     # Read the depth information for each file.
     infoPath = os.path.join(ps.folderPath, 'depthInfo.txt')
@@ -288,7 +279,6 @@ def ipSurvey():
             polyFileName += '_clip%dand%d' % (colMin, colMax)
         lineFileName = '%s_lines' % (a[0].fileDateStr)
         shapeFolder = r'C:\temp\181213_dataFrameFileEagle'
-        # FIXME:  Change the shape folder to something automatic
         polyFilePath = os.path.join(shapeFolder, polyFileName)
         lineFilePath = os.path.join(shapeFolder, lineFileName)
         dfPoly.to_file(polyFilePath)
@@ -562,20 +552,14 @@ def shoreline(ps):
     :param ps:
     :return:
     """
-    # dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
-    #                          r'\181112_eagle\NOAAShorelineDataExplorer'
-    #                          r'\NSDE61619\CUSPLine.shp'),
-    #                         crs=ps.crsWGS84)
+    dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
+                             r'\181112_eagle\NOAAShorelineDataExplorer'
+                             r'\NSDE61619\CUSPLine.shp'),
+                            crs=ps.crsWGS84)
 #    dfShore = gpd.read_file((r'C:\Users\timl\Documents\IP_data_plots'
 #                             r'\190506_eagle\NOAA Shoreline Data Explorer'
 #                             r'\CUSPLine.shp'),
 #                            crs=ps.crsWGS84)
-
-    shoreline_file = mipgui.file_dialogs.shoreline_file_location(os.getcwd)
-
-    print(f"Opening the shoreline file located at {shoreline_file}")        # TEST PRINT
-
-    dfShore = gpd.read_file(shoreline_file)
     if not ps.plotWGS84:
         dfShore = dfShore.to_crs(ps.crsAzEq)
     dfShore.plot(ax=ps.ax, color='k')

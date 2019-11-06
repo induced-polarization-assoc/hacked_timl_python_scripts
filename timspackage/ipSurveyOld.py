@@ -17,9 +17,6 @@ from shapely.geometry import Point as point
 from shapely.geometry import LineString as lineStr
 from shapely.geometry import Polygon as polygon
 from cartopy import crs as ccrs
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-import mipgui.file_dialogs
 
 
 class fileClass:
@@ -42,19 +39,12 @@ def ipSurvey():
     ps.saveTxt = False
 
     crop = True
-    # FIXME: change this to the file to open.
-    ps.folderPath = mipgui.file_dialogs.dir_to_scan()
-    print(f"Opening the files in {ps.folderPath} for analysis...")
-    # ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
+
+    ps.folderPath = r'C:\temp\181112_eagle'
     folderName = cs.lastName(ps.folderPath)
 
     # Processed result choice.
-    # FIXME:  Make this an option with a popup window
     loadThis = 'zAnyF'
-
-    # TODO: Add a routine in utilities that checks that the values of parsed data for navigation are REAL and finite
-    # TODO:  If the values are not real, ask the user if this file should be skipped with a tkinter messagebox.
-    # TODO:  Add a dialog box that asks the user which files to open for navigational data processing.
 
     # Read the depth information for each file.
     infoPath = os.path.join(ps.folderPath, 'depthInfo.txt')
@@ -67,9 +57,9 @@ def ipSurvey():
             (fileDateStr, fileNum, senseFt) = line.split(',')
             # Type casting.
             fileNum = int(fileNum)
-            # Estimated water depth on the line.
             senseFt = float(senseFt)  # (ft)
-            depth = senseFt / 3.28084  # (m)
+            # Add the depth of the sensor and convert to meter.
+            depth = (2.5 + senseFt) / 3.28084  # (m)
             # Dump results in a list.
             depthList.append([fileDateStr, fileNum, depth])
 
@@ -79,41 +69,36 @@ def ipSurvey():
     with open(filePath, 'rb') as f:  # Python 3: open(..., 'rb')
         a = pickle.load(f)
 
-    # Which files will be plotted.
-    filesPlotted = cs.readFilesPlotted(a, ps.folderPath)
-
     # Crop information.
     if crop:
-        cs.readCropInfo(a, ps.folderPath, 'pklCropInfo.txt')
+        cs.readCropInfo(a, ps.folderPath)
 
     # Plotting choice.
-    ps.plotThis = 'zMag'
+    ps.plotThis = 'zPhase'
 
     # Channel plotted.
     ps.ch = 1
 
     # Harmonic number of the xmitFund plotted.
-    ps.h = 1
+    ps.h = 13
     # Index of the frequency in the list of odd harmonics.
     ps.freqIdx = 4*ps.h
 
     # Whether the color axis bounds are set manually.
-    manualColor = True
-    clipColorData = False
-    colMin = 1  # /(2*sp.pi*4)
-    colMax = 5.5  # /(2*sp.pi*4)
+    manualColor = False
+    clipColorData = True
+    colMin = 185
+    colMax = 420
 
     # Whether to plot line segments and points along the survey track.
     ps.showLines = False
-
-    # Whehter to save polygon and line shape files.
-    ps.saveShape = False
+    ps.showPts = False
 
     # Rectangle defined by coordinate extrema along longi and lat axes.
     ps.ext = mm.coordExtrema(a)
 
     # Offset distance to either side of the survey line color strip extends.
-    ps.sideRange = 3  # (m)
+    ps.sideRange = 3.5  # (m)
 
     # Whether to plot in (longi, lat) or a projected reference.
     ps.plotWGS84 = False
@@ -135,11 +120,8 @@ def ipSurvey():
     # Initializations.
     ps.colMin = sp.inf
     ps.colMax = -sp.inf
-    tList = sp.array(range(len(a)))
-    tList = tList[filesPlotted]
-    originalFreqIdx = ps.freqIdx
+    tList = range(len(a))
     for t in tList:
-        ps.freqIdx = originalFreqIdx
         if a[t].pktCount > 0:
             # Join the longitude and latitude arrays into one matrix with two
             # columns. Col 0: longi, Col 1: lat.
@@ -152,16 +134,7 @@ def ipSurvey():
                         depth = depthList[idx][2]
             a[t].depth = depth*sp.ones_like(a[t].pkt)  # (m)
             # Cable lead-length deployed.
-            a[t].leadin = 65.25  # (m)
-            # Take an average of the 3rd and 5th harmonics to get a reading
-            # at 4 Hz when the xmitFund was 1 Hz.
-            if a[t].xmitFund == 1 and ps.h == 1:
-                ps.freqIdx = 4*4
-                freqIdx3Hz = 4*3
-                freqIdx5Hz = 4*5
-                a[t].phaseDiff[ps.ch, :, ps.freqIdx] = (
-                        (a[t].phaseDiff[ps.ch, :, freqIdx3Hz] +
-                         a[t].phaseDiff[ps.ch, :, freqIdx5Hz])/2)
+            a[t].leadin = 57  # (m)
             # Pick which data to map to colors in the plot.
             if ps.plotThis == 'zPhase':
                 a[t].color = a[t].phaseDiff[ps.ch, :, ps.freqIdx]
@@ -187,26 +160,15 @@ def ipSurvey():
                 # Despike phase differences with a threshold spike in us.
 #                a[t].color = despike(a[t].color, 100)
                 cbarLabel = 'v-i Time (ms)'
-            elif ps.plotThis == 'crop':
-                a[t].color = a[t].cropLogic.astype(float)
             # Edit the color data to clip at the manual bounds, if desired.
             if clipColorData:
                 a[t].color[a[t].color < colMin] = colMin
                 a[t].color[a[t].color > colMax] = colMax
             # Keep track of the maximum and minimum color values.
-            if a[t].xmitFund != 8:
-                if not crop:
-                    arraMin = sp.amin(a[t].color)
-                    arraMax = sp.amax(a[t].color)
-                else:
-                    if sp.any(a[t].cropLogic):
-                        arraMin = sp.amin(a[t].color[a[t].cropLogic])
-                        arraMax = sp.amax(a[t].color[a[t].cropLogic])
-                    else:
-                        arraMin = sp.inf
-                        arraMax = -sp.inf
+            arraMin = sp.amin(a[t].color)
             if arraMin < ps.colMin:
                 ps.colMin = arraMin
+            arraMax = sp.amax(a[t].color)
             if arraMax > ps.colMax:
                 ps.colMax = arraMax
 
@@ -215,84 +177,29 @@ def ipSurvey():
         ps.colMin = colMin
         ps.colMax = colMax
 
-    # Big picture class containing master polygon, color, and line lists for
-    # all survey lines.
-    bp = cs.emptyClass()
-    bp.polyList = []
-    bp.colorList = []
-    bp.lineList = []
+    ps.fig, ps.ax = plt.subplots()
+    ps.ax.set_aspect('equal')
+    ps.cmap = 'jet'
+    ps.lineCol = 'k'  # Color of the basic track line shape.
     for t in tList:
         if a[t].pktCount > 0:
             if not crop or (crop and sum(a[t].cropLogic) > 0):
                 print('file %s_%d' % (a[t].fileDateStr, a[t].fileNum))
                 print(a[t].descript)
-                # Print time the file started.
-                print(a[t].cpuDTStr[0].t)
-                plotStrip(bp, a[t], ps, crop)
-
-    ps.fig = plt.gcf()
-    ps.ax = ps.fig.add_subplot(111)
-    ps.ax.set_aspect('equal')
-    ps.cmap = 'jet'
-    ps.lineCol = 'k'  # Color of the basic track line shape.
-    # Geopandas data frame object containing each polygon in the list, along
-    # with colors.
-    dfPoly = gpd.GeoDataFrame({'geometry': bp.polyList,
-                               'color': bp.colorList})
-    dfPoly.crs = ps.crsAzEq
-
-    dfLine = gpd.GeoDataFrame({'geometry': bp.lineList})
-    dfLine.crs = ps.crsAzEq
-
-    # Transform back to (longi,lat), if requested.
-    if ps.plotWGS84:
-        dfLine = dfLine.to_crs(ps.crsWGS84)
-        dfPoly = dfPoly.to_crs(ps.crsWGS84)
-
-    dfPoly.plot(ax=ps.ax, column='color', cmap=ps.cmap,
-                vmin=ps.colMin, vmax=ps.colMax)
-
-    if ps.showLines:
-        dfLine.plot(ax=ps.ax, color=ps.lineCol)
-
-    # Transform back to (longi,lat).
-    if ~ps.plotWGS84:
-        dfLine = dfLine.to_crs(ps.crsWGS84)
-        dfPoly = dfPoly.to_crs(ps.crsWGS84)
+                plotStrip(a[t], ps, crop)
 
     # Keep axis bounds from before the shorelines are plotted.
     xlimLeft, xlimRight = plt.xlim()
     ylimLeft, ylimRight = plt.ylim()
-    xlimLeft = -100
-    xlimRight = 500
-    ylimLeft = -600
-    ylimRight = 600
-#    xlimLeft = -100
-#    xlimRight = 500
-#    ylimLeft = -300
-#    ylimRight = 400
-#    xlimLeft = 5000
-#    xlimRight = 9000
-#    ylimLeft = -3500
-#    ylimRight = -1500
-#    xlimLeft = 7800
-#    xlimRight = 9000
-#    ylimLeft = -3000
-#    ylimRight = -2100
+    xlimLeft = -408.14159194218564
+    xlimRight = 383.2435609713969
+    ylimLeft = -375.3266408701022
+    ylimRight = 325.37655253272123
 
     if ps.saveShape:
         # Save the geodataframes to files for colors and lines.
-        polyFileName = '%s_%s_Ch%dH%d' % (a[0].fileDateStr,
-                                          ps.plotThis, ps.ch, ps.h)
-        if clipColorData:
-            polyFileName += '_clip%dand%d' % (colMin, colMax)
-        lineFileName = '%s_lines' % (a[0].fileDateStr)
-        shapeFolder = r'C:\temp\181213_dataFrameFileEagle'
-        # FIXME:  Change the shape folder to something automatic
-        polyFilePath = os.path.join(shapeFolder, polyFileName)
-        lineFilePath = os.path.join(shapeFolder, lineFileName)
-        dfPoly.to_file(polyFilePath)
-        dfLine.to_file(lineFilePath)
+        polyFileName = 'ch%d_H%d_%s_%s_%d.txt' % (ps.ch, ps.h, ps.plotThis,
+                                             at.fileDateStr, at.fileNum,)
 
     # Shoreline plotting.
     shoreline(ps)
@@ -307,14 +214,9 @@ def ipSurvey():
                                                   vmax=ps.colMax))
     sm._A = []
     # colorbar() requires a scalar mappable, "sm".
-    if ps.plotThis != 'crop':
-#        cbaxes = ps.fig.add_axes([0.8, 0.1, 0.03, 0.8])
-        divider = make_axes_locatable(ps.ax)
-        cax1 = divider.append_axes("right", size="10%", pad=0.05)
-        cb = plt.colorbar(sm, cax=cax1)
-        cb.set_label(cbarLabel)
+    cb = plt.colorbar(sm)
+    cb.set_label(cbarLabel)
 
-    plt.sca(ps.ax)
     # Axes labels.
     if not ps.plotWGS84:
         plt.xlabel('W-E (m)')
@@ -323,22 +225,10 @@ def ipSurvey():
         plt.xlabel('Longitude (deg)')
         plt.ylabel('Latitude (deg)')
     plt.grid(b=True)
-    # Plot title. Use notes recorded in one of the files plotted.
-    tTitle = cs.find(filesPlotted, True)
-#    titleStr = ('%s Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch], ps.h,
-#                   ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
-    titleStr = ('Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
-            % (ps.ch, a[tTitle].measStr[ps.ch], ps.h,
-               ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
-#    titleStr = ('%s Ch %d (%s). Frequency = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch],
-#                   ps.h*a[tTitle].xmitFund))
-#    titleStr = ('%s_%d Line %s. Ch %d (%s). Frequency = %.0f Hz. '
-#                'xmitFund = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, a[tTitle].fileNum,
-#                   a[tTitle].descript, ps.ch, a[tTitle].measStr[ps.ch],
-#                   a[tTitle].freq[ps.freqIdx], a[tTitle].xmitFund))
+    # Plot title.
+    titleStr = ('%s Ch %d (%s). Harmonic %d = %.2f Hz. xmitFund = %.2f Hz.'
+                % (a[0].fileDateStr, ps.ch, a[0].measStr[ps.ch], ps.h,
+                   ps.h*a[0].xmitFund, a[0].xmitFund))
     if manualColor or clipColorData:
         if ps.plotThis == 'zPhase':
             titleStr += (' \nColors clipped at %d mrad and %d mrad.'
@@ -355,14 +245,7 @@ def ipSurvey():
             titleStr += ((' \nColors clipped at %.2f ms ' +
                           'and %.2f ms.')
                         % (ps.colMin, ps.colMax))
-        elif ps.plotThis == 'crop':
-            titleStr = '%s Orange = Array on Floor (Guess)' % (a[0].fileDateStr)
-#            t = 4
-#            titleStr = ('%s_%d Line %s. Average Speed 1.7 kt.' %
-#                        (a[t].fileDateStr, a[t].fileNum, a[t].descript))
     plt.title(titleStr)
-#    clims = cb.get_clim()
-#    print('\n\ncolMin = %.3f\ncolMax = %.3f' % (clims[0], clims[1]))
 
 
 def despike(arra, thresh):
@@ -375,7 +258,7 @@ def despike(arra, thresh):
     return arra
 
 
-def plotStrip(bp, at, ps, crop):
+def plotStrip(at, ps, crop):
     """
     Plot a strip of colored polygons along a trace of GPS coordinates (deg).
     Extension of the strip outward from the line to either side is specified
@@ -383,9 +266,6 @@ def plotStrip(bp, at, ps, crop):
 
     Parameters
     ----------
-    bp.polyList: master list of polygons, all lines included
-    bp.colorList: master list of colors for each polygon
-    bp.lineList: master list of survey lines
     at.fix : float (deg), (pktCount)x2 array
       [longitude, latitude] coordinates of ship, rows are packets in order.
     at.depth :  float (m), array length pktCount
@@ -416,18 +296,6 @@ def plotStrip(bp, at, ps, crop):
     segLen = sp.sqrt(vParSeg[:, 0]**2 + vParSeg[:, 1]**2)  # (m)
     # Cumulative sum along the track line.
     sumLen = sp.hstack((0, sp.cumsum(segLen)))
-    
-    # Print the total line length (m).
-#    print('%.1f m along line.' % (sumLen[-1]))
-    # Distance between start and endpoints.
-    startFinDist = mm.norm(flatFix[0, :] - flatFix[-1, :])
-#    print('%.1f m distance from start point to finish point.' % startFinDist)
-    # Time elapsed on the line.
-    lineTime = (at.cpuDT[-1] - at.cpuDT[0]).total_seconds()
-#    print('%.0f s elapsed.' % lineTime)
-    lineSpeed = startFinDist/lineTime  # (m/s)
-    lineSpeed *= 1.94384  # (kt)
-#    print('%.1f kt average speed' % lineSpeed)
 
     # Interpolate a laidback fix location on the track line.
     # Layback the extra length at the start of the line according to
@@ -436,21 +304,16 @@ def plotStrip(bp, at, ps, crop):
     newFix = sp.zeros_like(flatFix, dtype=float)
     linLoc = 2*at.leadin
     closeIdx = sp.argmin(abs(sumLen - linLoc))
-    # If the line is at least as long as twice the lead in.
-    if sumLen[-1] > linLoc:
-        if linLoc >= sumLen[closeIdx]:
-            idx1 = closeIdx
-            idx2 = closeIdx + 1
-        else:
-            idx1 = closeIdx - 1
-            idx2 = closeIdx
-        l1 = sumLen[idx1]
-        l2 = sumLen[idx2]
-        startHeadingFix = flatFix[idx1, :] + (flatFix[idx2, :] -
-              flatFix[idx1, :])*(linLoc - l1)/(l2 - l1)
+    if linLoc >= sumLen[closeIdx]:
+        idx1 = closeIdx
+        idx2 = closeIdx + 1
     else:
-        # Else just use the heading of the whole line.
-        startHeadingFix = flatFix[-1, :]
+        idx1 = closeIdx - 1
+        idx2 = closeIdx
+    l1 = sumLen[idx1]
+    l2 = sumLen[idx2]
+    startHeadingFix = flatFix[idx1, :] + (flatFix[idx2, :] -
+          flatFix[idx1, :])*(linLoc - l1)/(l2 - l1)
     startHeadingVec = mm.unit(startHeadingFix - flatFix[0, :])
     for p in range(len(flatFix)):
         linLoc = sumLen[p] - mm.cableRange(at.leadin, at.depth[p])
@@ -464,12 +327,8 @@ def plotStrip(bp, at, ps, crop):
                 idx2 = closeIdx
             l1 = sumLen[idx1]
             l2 = sumLen[idx2]
-            if l1 != l2:
-                newFix[p, :] = flatFix[idx1, :] + (flatFix[idx2, :] -
-                      flatFix[idx1, :])*(linLoc - l1)/(l2 - l1)
-            else:
-                # Case of interpolation between two repeated locations.
-                newFix[p, :] = flatFix[idx1, :]
+            newFix[p, :] = flatFix[idx1, :] + (flatFix[idx2, :] -
+                  flatFix[idx1, :])*(linLoc - l1)/(l2 - l1)
         else:
             newFix[p, :] = flatFix[0, :] + linLoc*startHeadingVec
     # Overwrite.
@@ -489,29 +348,31 @@ def plotStrip(bp, at, ps, crop):
     vPerpSeg = ps.sideRange*mm.unit(mm.perp(vParSeg))  # (m)
     vPerpPt = ps.sideRange*mm.unit(mm.perp(vParPt))  # (m)
 
+    # Include each segment between the fix coordinates as its own line object.
+    lineList = []
+    for p in range(len(flatFix) - 1):
+        endPts = [tuple(row) for row in flatFix[p:p+2, :]]
+        lineList.append(lineStr(endPts))
+    dfLine = gpd.GeoDataFrame({'geometry': lineList})
+    dfLine.crs = ps.crsAzEq
+
+    polyList = []
     # If cropping, only include fix points where asked.
     plottedPkts = sp.array(range(len(at.pkt)))
-    if crop and ps.plotThis != 'crop':
+    if crop:
         plottedPkts = plottedPkts[at.cropLogic]
-    lastGoodVerts = sp.zeros((4, 2))
     # Polygon patches for each packet.
     for p in plottedPkts:
         # Perpendicular displacement, length sideRange, at the first midpoint.
         if p != 0:
-            # Identify a trailing midpoint which is different from the 
-            # present fix location. (Not between duplicate fixes.)
-            pPrior = p - 1
-            while pPrior >= 0 and all(midPts[pPrior, :] == flatFix[p, :]):
-                pPrior -= 1
-            vert01 = sp.vstack((midPts[pPrior, :] - vPerpSeg[pPrior, :],
-                                midPts[pPrior, :] + vPerpSeg[pPrior, :]))
+            vert01 = sp.vstack((midPts[p-1, :] - vPerpSeg[p-1, :],
+                                midPts[p-1, :] + vPerpSeg[p-1, :]))
         else:
             vert01 = sp.zeros((0, 2))
         # Polygon points offset from the flat fix points themselves.
         vert2 = flatFix[p, :] + vPerpPt[p, :]
         vert5 = flatFix[p, :] - vPerpPt[p, :]
         if p != len(flatFix) - 1:
-
             # at the second midpoint.
             vert34 = sp.vstack((midPts[p, :] + vPerpSeg[p, :],
                                 midPts[p, :] - vPerpSeg[p, :]))
@@ -519,27 +380,35 @@ def plotStrip(bp, at, ps, crop):
             vert34 = sp.zeros((0, 2))
         # Polygon vertices.
         verts = sp.vstack((vert01, vert2, vert34, vert5))
-        # In the case where IP packets come in at a higher rate than the GPS
-        # fixes are updated, consecutive packets have the same position at
-        # times. In this case, reuse the last useable polygon. This will plot
-        # on top of the reused position.
-        if sp.isnan(verts).any():
-            verts = lastGoodVerts.copy()
-        else:
-            lastGoodVerts = verts.copy()
         # Vertices as tuples in a list.
         vertList = [tuple(row) for row in verts]
         # Append the latest polygon vertices to the list of polygons.
-        bp.polyList.append(polygon(vertList))
+        polyList.append(polygon(vertList))
 
-    bp.colorList = sp.hstack((bp.colorList, at.color[plottedPkts]))
+    # Geopandas data frame object containing each polygon in the list, along
+    # with colors.
+    dfPoly = gpd.GeoDataFrame({'geometry': polyList,
+                               'color': at.color[plottedPkts]})
+    dfPoly.crs = ps.crsAzEq
+    # Transform back to (longi,lat), if requested.
+    if ps.plotWGS84:
+        dfPt = dfPt.to_crs(ps.crsWGS84)
+        dfLine = dfLine.to_crs(ps.crsWGS84)
+        dfPoly = dfPoly.to_crs(ps.crsWGS84)
 
-    # Include each segment between the fix coordinates as its own line object.
-    for p in plottedPkts:
-        if p < len(flatFix) - 1:
-            endPts = [tuple(row) for row in flatFix[p:p+2, :]]
-            if at.xmitFund == 8:
-                bp.lineList.append(lineStr(endPts))
+    dfPoly.plot(ax=ps.ax, column='color', cmap=ps.cmap,
+                vmin=ps.colMin, vmax=ps.colMax)
+
+    if ps.showLines:
+        dfLine.plot(ax=ps.ax, color=ps.lineCol)
+    if ps.showPts:
+        dfPt.plot(ax=ps.ax)
+
+    # Transform back to (longi,lat).
+    if ~ps.plotWGS84:
+        dfPt = dfPt.to_crs(ps.crsWGS84)
+        dfLine = dfLine.to_crs(ps.crsWGS84)
+        dfPoly = dfPoly.to_crs(ps.crsWGS84)
 
     if ps.saveTxt:
         # Pseudocolor plots.
@@ -556,26 +425,11 @@ def plotStrip(bp, at, ps, crop):
 
 
 def shoreline(ps):
-    """
-    .. function:: shoreline()
-    Geodataframe containing shorelines to draw as a layer on the chart.
-    :param ps:
-    :return:
-    """
-    # dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
-    #                          r'\181112_eagle\NOAAShorelineDataExplorer'
-    #                          r'\NSDE61619\CUSPLine.shp'),
-    #                         crs=ps.crsWGS84)
-#    dfShore = gpd.read_file((r'C:\Users\timl\Documents\IP_data_plots'
-#                             r'\190506_eagle\NOAA Shoreline Data Explorer'
-#                             r'\CUSPLine.shp'),
-#                            crs=ps.crsWGS84)
-
-    shoreline_file = mipgui.file_dialogs.shoreline_file_location(os.getcwd)
-
-    print(f"Opening the shoreline file located at {shoreline_file}")        # TEST PRINT
-
-    dfShore = gpd.read_file(shoreline_file)
+    # Geodataframe containing shorelines to draw as a layer on the chart.
+    dfShore = gpd.read_file((r'C:\temp\181112_eagle' +
+                             r'\NOAAShorelineDataExplorer' +
+                             r'\NSDE61619\CUSPLine.shp'),
+                            crs=ps.crsWGS84)
     if not ps.plotWGS84:
         dfShore = dfShore.to_crs(ps.crsAzEq)
     dfShore.plot(ax=ps.ax, color='k')

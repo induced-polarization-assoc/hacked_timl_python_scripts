@@ -107,8 +107,28 @@ def set_save_path():
     return save_location
 
 
+def shoreline_file_location(working_dir):
+    """
+    .. function shoreline_file_location()
+
+    Prompts the user with a GUI to select a `*.shp` file, using the current working directory as a reference point.
+
+    :param working_dir:
+        string --> Current working directory
+    :return shoreline_file_path:
+        string --> Shoreline file location path for data processing and rendering the output figure.
+    """
+    shoreline_file_path = tkinter.filedialog.askopenfilename(
+        parent=root, initialdir=starting_dir,
+        title='Select a Shoreline Shape File to Import',
+        filetypes=[('shoreline files', '.shp')]
+    )
+
+    return shoreline_file_path
+
+
 if __name__ == "__main__":
-    # What happens if this module is called as a standalone script.
+    # What happens if this module is called as a standalone script. Typically for debugging purposes.
     working_directory = os.getcwd()
     dir_to_scan = print_input_path(working_directory)
     backup_to = set_backup_path()
