@@ -8,8 +8,8 @@ Created on Tue May 22 16:08:57 2018
 
 import os
 import scipy as sp
-import commonSense as cs
-import ipMapMath as mm
+from ipdataproc import common_sense as cs
+from marineiputils import navigation_math as mm
 import pickle
 import matplotlib.pyplot as plt
 import geopandas as gpd
@@ -97,7 +97,7 @@ def ipSurvey():
     # Whether to plot line segments and points along the survey track.
     ps.showLines = False
 
-    # Whehter to save polygon and line shape files.
+    # Whehter to save Polygon and line shape files.
     ps.saveShape = False
 
     # Rectangle defined by coordinate extrema along longi and lat axes.
@@ -206,7 +206,7 @@ def ipSurvey():
         ps.colMin = colMin
         ps.colMax = colMax
 
-    # Big picture class containing master polygon, color, and line lists for
+    # Big picture class containing master Polygon, color, and line lists for
     # all survey lines.
     bp = cs.emptyClass()
     bp.polyList = []
@@ -226,7 +226,7 @@ def ipSurvey():
     ps.ax.set_aspect('equal')
     ps.cmap = 'jet'
     ps.lineCol = 'k'  # Color of the basic track line shape.
-    # Geopandas data frame object containing each polygon in the list, along
+    # Geopandas data frame object containing each Polygon in the list, along
     # with colors.
     dfPoly = gpd.GeoDataFrame({'geometry': bp.polyList,
                                'color': bp.colorList})
@@ -374,7 +374,7 @@ def plotStrip(bp, at, ps, crop):
     Parameters
     ----------
     bp.polyList: master list of polygons, all lines included
-    bp.colorList: master list of colors for each polygon
+    bp.colorList: master list of colors for each Polygon
     bp.lineList: master list of survey lines
     at.fix : float (deg), (pktCount)x2 array
       [longitude, latitude] coordinates of ship, rows are packets in order.
@@ -411,7 +411,7 @@ def plotStrip(bp, at, ps, crop):
 #    print('%.1f m along line.' % (sumLen[-1]))
     # Distance between start and endpoints.
     startFinDist = mm.norm(flatFix[0, :] - flatFix[-1, :])
-#    print('%.1f m distance from start point to finish point.' % startFinDist)
+#    print('%.1f m distance from start Point to finish Point.' % startFinDist)
     # Time elapsed on the line.
     lineTime = (at.cpuDT[-1] - at.cpuDT[0]).total_seconds()
 #    print('%.0f s elapsed.' % lineTime)
@@ -467,14 +467,14 @@ def plotStrip(bp, at, ps, crop):
 
     # Reevaluate track vectors between each pair of consecutive GPS fixes.
     vParSeg = flatFix[1:, :] - flatFix[0:-1, :]
-    # Track vectors at each point, found from points before and after.
+    # Track vectors at each Point, found from points before and after.
     vParPt = flatFix[2:, :] - flatFix[0:-2, :]
     # Include segment parallels for the boundary fix points.
     vParPt = sp.vstack((vParSeg[0, :], vParPt, vParSeg[-1, :]))
     # Midpoints along the sequence of GPS fixes.
     midPts = (flatFix[1:, :] + flatFix[0:-1, :])/2
 
-    # Perpendicular vectors at each segment and fix point.
+    # Perpendicular vectors at each segment and fix Point.
     # Vector lengths are set to sideRange.
     vPerpSeg = ps.sideRange*mm.unit(mm.perp(vParSeg))  # (m)
     vPerpPt = ps.sideRange*mm.unit(mm.perp(vParPt))  # (m)
@@ -511,7 +511,7 @@ def plotStrip(bp, at, ps, crop):
         verts = sp.vstack((vert01, vert2, vert34, vert5))
         # In the case where IP packets come in at a higher rate than the GPS
         # fixes are updated, consecutive packets have the same position at
-        # times. In this case, reuse the last useable polygon. This will plot
+        # times. In this case, reuse the last useable Polygon. This will plot
         # on top of the reused position.
         if sp.isnan(verts).any():
             verts = lastGoodVerts.copy()
@@ -519,7 +519,7 @@ def plotStrip(bp, at, ps, crop):
             lastGoodVerts = verts.copy()
         # Vertices as tuples in a list.
         vertList = [tuple(row) for row in verts]
-        # Append the latest polygon vertices to the list of polygons.
+        # Append the latest Polygon vertices to the list of polygons.
         bp.polyList.append(polygon(vertList))
 
     bp.colorList = sp.hstack((bp.colorList, at.color[plottedPkts]))

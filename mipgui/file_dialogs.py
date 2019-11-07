@@ -9,10 +9,10 @@ analysis tasks.
 __author__:  jjradler
 __date__:   11/06/2019
 """
-import os
 import tkinter
 import tkinter.filedialog
 import tkinter.messagebox
+from pathlib import Path
 
 root = tkinter.Tk()
 
@@ -39,6 +39,37 @@ def print_input_path(starting_dir):
     return input_dir_to_scan
 
 
+def make_backup_yes_no(input_directory):
+    """
+    .. function:: make_backup_yes_no()
+
+    :Summary:
+        GUI window to prompt the user whether they would like to make a backup of the current data
+        directory so that it is not corrupted by any subsequent analysis or file handling operations.
+
+    :param input_directory:
+        The data input directory selected by the user.
+    :return answer:
+        Yes or No saved as a True or False value.
+    """
+    question = f"Would you like to back up the data folder {input_directory} now?"
+    usr_says = tkinter.messagebox.askquestion('Make Backups?', question)
+
+    if usr_says == 'yes':
+        return set_backup_path()
+    else:
+        verify = tkinter.messagebox.askquestion('You Sure?',
+                                                'Your data will not be protected from possible corruption!',
+                                                icon='warning'
+                                                )
+        if verify == 'yes':
+            tkinter.messagebox.showinfo('Information', 'You have opted not to make a backup!')
+            root.destroy()
+            return None
+        else:
+            return set_backup_path()
+
+
 def set_backup_path():
     """
     .. function:: print_input_path()
@@ -48,7 +79,7 @@ def set_backup_path():
 
     :return:
     """
-    current_dir = os.getcwd()
+    current_dir = Path.cwd()
     backup_location = tkinter.filedialog.askdirectory(
         parent=root, initialdir=current_dir,
         title='Select Backup Location for Raw Data'
@@ -97,9 +128,9 @@ def set_save_path():
 
     :return:
     """
-    current_dir = os.getcwd()
+    home_dir = Path.home()
     save_location = tkinter.filedialog.askdirectory(
-        parent=root, initialdir=current_dir,
+        parent=root, initialdir=home_dir,
         title='Select Save Location for Processed Data'
         )
     print(f"Save location set at:\t {save_location}!")    # TEST PRINT
@@ -111,7 +142,7 @@ def shoreline_file_location(working_dir):
     """
     .. function shoreline_file_location()
 
-    Prompts the user with a GUI to select a `*.shp` file, using the current working directory as a reference point.
+    Prompts the user with a GUI to select a `*.shp` file, using the current working directory as a reference Point.
 
     :param working_dir:
         string --> Current working directory
@@ -129,10 +160,12 @@ def shoreline_file_location(working_dir):
 
 if __name__ == "__main__":
     # What happens if this module is called as a standalone script. Typically for debugging purposes.
-    working_directory = os.getcwd()
+    working_directory = Path.cwd()
     dir_to_scan = print_input_path(working_directory)
+    make_backup = make_backup_yes_no(dir_to_scan)
     backup_to = set_backup_path()
     save_plots = save_yes_no()
+    save_plots_to = set_save_path()
     print(working_directory)
     print(dir_to_scan)
     print(backup_to)

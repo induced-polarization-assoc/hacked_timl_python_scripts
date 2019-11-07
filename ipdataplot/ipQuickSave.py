@@ -8,9 +8,9 @@ Created on Thu Jun 28 10:50:36 2018
 
 import os
 import pickle
-import ipQuickVsPkt as qvp
+from ipdataplot import ipQuickVsPkt as qvp
 import matplotlib.pyplot as plt
-import commonSense as cs
+from ipdataproc import common_sense as cs
 import scipy as sp
 
 

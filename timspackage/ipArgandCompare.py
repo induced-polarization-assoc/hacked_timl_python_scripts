@@ -6,9 +6,10 @@ Created on Tue Mar  5 11:19:02 2019
 """
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 
-import ipArgand as arg
+from ipdataplot import ipArgand as arg
 import scipy as sp
-import commonSense as cs
+from ipdataproc import common_sense as cs
+
 
 class fileClass:
     pass

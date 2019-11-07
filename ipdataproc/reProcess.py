@@ -9,8 +9,8 @@ Created on Thu Oct 18 15:57:16 2018
 import os
 import matplotlib.pyplot as plt
 import artificialRaw as ar
-import ipProcess as ip
-import ipPlot as ipPlt
+from ipdataproc import ipProcess as ip
+from ipdataplot import ipPlot as ipPlt
 
 
 def reProcess():

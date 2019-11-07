@@ -8,7 +8,7 @@ Created on Thu Jun 28 10:50:36 2018
 
 import os
 import pickle
-import commonSense as cs
+from ipdataproc import common_sense as cs
 
 
 class fileClass:

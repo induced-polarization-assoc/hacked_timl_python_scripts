@@ -8,23 +8,37 @@ Created on Tue May 22 16:08:57 2018
 
 import os
 import scipy as sp
-import commonSense as cs
-import ipMapMath as mm
+from ipdataproc import common_sense as cs
+from marineiputils import navigation_math as mm
 import pickle
 import matplotlib.pyplot as plt
 import geopandas as gpd
-from shapely.geometry import Point as point
-from shapely.geometry import LineString as lineStr
-from shapely.geometry import Polygon as polygon
+# from shapely.geometry import Point as Point
+from shapely.geometry import Point
+# from shapely.geometry import LineString as LineString
+from shapely.geometry import LineString
+# from shapely.geometry import Polygon as Polygon
+from shapely.geometry import Polygon
 from cartopy import crs as ccrs
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from pathlib import Path
+
+import mipgui.file_dialogs
 
 
-class fileClass:
+class FileClass:
+    """
+    Docstring that describes what this oddball structure does...
+    """
     pass
 
 
-def ipSurvey():
+def ip_survey():
+    """
+    Combines all the different types of analyses into a generated survey report.  Allegedly...
+
+    :return:
+    """
     params = {'legend.fontsize': 'x-large',
               'figure.figsize': (9, 6.5),
               'axes.labelsize': 'x-large',
@@ -40,12 +54,22 @@ def ipSurvey():
     ps.saveTxt = False
 
     crop = True
+    # FIXME: ADD A MESSAGE THAT SETS THE DEFAULT LOCATION TO LOOK FOR DATA FILES
+    # FIXME: change this to the file to open.
+    default_open_location = Path.cwd()
+    ps.folderPath = mipgui.file_dialogs.print_input_path(default_open_location)
+    print(f"Opening the files in {ps.folderPath} for analysis...")
 
-    ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
-    folderName = cs.lastName(ps.folderPath)
+    # ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
+    folder_name = cs.lastName(ps.folderPath)
 
     # Processed result choice.
+    # FIXME:  Make this an option with a popup window
     loadThis = 'zAnyF'
+
+    # TODO: Add a routine in utilities that checks that the values of parsed data for navigation are REAL and finite
+    # TODO:  If the values are not real, ask the user if this file should be skipped with a tkinter messagebox.
+    # TODO:  Add a dialog box that asks the user which files to open for navigational data processing.
 
     # Read the depth information for each file.
     infoPath = os.path.join(ps.folderPath, 'depthInfo.txt')
@@ -65,7 +89,7 @@ def ipSurvey():
             depthList.append([fileDateStr, fileNum, depth])
 
     # Loading the data.
-    pklName = folderName + '_' + loadThis + '.pkl'
+    pklName = folder_name + '_' + loadThis + '.pkl'
     filePath = os.path.join(ps.folderPath, pklName)
     with open(filePath, 'rb') as f:  # Python 3: open(..., 'rb')
         a = pickle.load(f)
@@ -95,9 +119,9 @@ def ipSurvey():
     colMax = 5.5  # /(2*sp.pi*4)
 
     # Whether to plot line segments and points along the survey track.
-    ps.showLines = False
+    ps.showLines = True
 
-    # Whehter to save polygon and line shape files.
+    # Whehter to save Polygon and line shape files.
     ps.saveShape = False
 
     # Rectangle defined by coordinate extrema along longi and lat axes.
@@ -206,7 +230,7 @@ def ipSurvey():
         ps.colMin = colMin
         ps.colMax = colMax
 
-    # Big picture class containing master polygon, color, and line lists for
+    # Big picture class containing master Polygon, color, and line lists for
     # all survey lines.
     bp = cs.emptyClass()
     bp.polyList = []
@@ -226,7 +250,7 @@ def ipSurvey():
     ps.ax.set_aspect('equal')
     ps.cmap = 'jet'
     ps.lineCol = 'k'  # Color of the basic track line shape.
-    # Geopandas data frame object containing each polygon in the list, along
+    # Geopandas data frame object containing each Polygon in the list, along
     # with colors.
     dfPoly = gpd.GeoDataFrame({'geometry': bp.polyList,
                                'color': bp.colorList})
@@ -279,6 +303,7 @@ def ipSurvey():
             polyFileName += '_clip%dand%d' % (colMin, colMax)
         lineFileName = '%s_lines' % (a[0].fileDateStr)
         shapeFolder = r'C:\temp\181213_dataFrameFileEagle'
+        # FIXME:  Change the shape folder to something automatic
         polyFilePath = os.path.join(shapeFolder, polyFileName)
         lineFilePath = os.path.join(shapeFolder, lineFileName)
         dfPoly.to_file(polyFilePath)
@@ -374,7 +399,7 @@ def plotStrip(bp, at, ps, crop):
     Parameters
     ----------
     bp.polyList: master list of polygons, all lines included
-    bp.colorList: master list of colors for each polygon
+    bp.colorList: master list of colors for each Polygon
     bp.lineList: master list of survey lines
     at.fix : float (deg), (pktCount)x2 array
       [longitude, latitude] coordinates of ship, rows are packets in order.
@@ -388,7 +413,7 @@ def plotStrip(bp, at, ps, crop):
     """
     # Start by transforming the fix points into a local azimuthal equidistant
     # reference system. Units along x and y are meters.
-    ptList = [point(tuple(row)) for row in at.fix]
+    ptList = [Point(tuple(row)) for row in at.fix]
     dfPt = gpd.GeoDataFrame({'geometry': ptList})
     # Assign the WGS84 latitude-longitude Coordinate Reference System (CRS).
     dfPt.crs = ps.crsWGS84
@@ -411,7 +436,7 @@ def plotStrip(bp, at, ps, crop):
 #    print('%.1f m along line.' % (sumLen[-1]))
     # Distance between start and endpoints.
     startFinDist = mm.norm(flatFix[0, :] - flatFix[-1, :])
-#    print('%.1f m distance from start point to finish point.' % startFinDist)
+#    print('%.1f m distance from start Point to finish Point.' % startFinDist)
     # Time elapsed on the line.
     lineTime = (at.cpuDT[-1] - at.cpuDT[0]).total_seconds()
 #    print('%.0f s elapsed.' % lineTime)
@@ -467,14 +492,14 @@ def plotStrip(bp, at, ps, crop):
 
     # Reevaluate track vectors between each pair of consecutive GPS fixes.
     vParSeg = flatFix[1:, :] - flatFix[0:-1, :]
-    # Track vectors at each point, found from points before and after.
+    # Track vectors at each Point, found from points before and after.
     vParPt = flatFix[2:, :] - flatFix[0:-2, :]
     # Include segment parallels for the boundary fix points.
     vParPt = sp.vstack((vParSeg[0, :], vParPt, vParSeg[-1, :]))
     # Midpoints along the sequence of GPS fixes.
     midPts = (flatFix[1:, :] + flatFix[0:-1, :])/2
 
-    # Perpendicular vectors at each segment and fix point.
+    # Perpendicular vectors at each segment and fix Point.
     # Vector lengths are set to sideRange.
     vPerpSeg = ps.sideRange*mm.unit(mm.perp(vParSeg))  # (m)
     vPerpPt = ps.sideRange*mm.unit(mm.perp(vParPt))  # (m)
@@ -511,7 +536,7 @@ def plotStrip(bp, at, ps, crop):
         verts = sp.vstack((vert01, vert2, vert34, vert5))
         # In the case where IP packets come in at a higher rate than the GPS
         # fixes are updated, consecutive packets have the same position at
-        # times. In this case, reuse the last useable polygon. This will plot
+        # times. In this case, reuse the last useable Polygon. This will plot
         # on top of the reused position.
         if sp.isnan(verts).any():
             verts = lastGoodVerts.copy()
@@ -519,8 +544,8 @@ def plotStrip(bp, at, ps, crop):
             lastGoodVerts = verts.copy()
         # Vertices as tuples in a list.
         vertList = [tuple(row) for row in verts]
-        # Append the latest polygon vertices to the list of polygons.
-        bp.polyList.append(polygon(vertList))
+        # Append the latest Polygon vertices to the list of polygons.
+        bp.polyList.append(Polygon(vertList))
 
     bp.colorList = sp.hstack((bp.colorList, at.color[plottedPkts]))
 
@@ -529,7 +554,7 @@ def plotStrip(bp, at, ps, crop):
         if p < len(flatFix) - 1:
             endPts = [tuple(row) for row in flatFix[p:p+2, :]]
             if at.xmitFund == 8:
-                bp.lineList.append(lineStr(endPts))
+                bp.lineList.append(LineString(endPts))
 
     if ps.saveTxt:
         # Pseudocolor plots.
@@ -552,14 +577,20 @@ def shoreline(ps):
     :param ps:
     :return:
     """
-    dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
-                             r'\181112_eagle\NOAAShorelineDataExplorer'
-                             r'\NSDE61619\CUSPLine.shp'),
-                            crs=ps.crsWGS84)
+    # dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
+    #                          r'\181112_eagle\NOAAShorelineDataExplorer'
+    #                          r'\NSDE61619\CUSPLine.shp'),
+    #                         crs=ps.crsWGS84)
 #    dfShore = gpd.read_file((r'C:\Users\timl\Documents\IP_data_plots'
 #                             r'\190506_eagle\NOAA Shoreline Data Explorer'
 #                             r'\CUSPLine.shp'),
 #                            crs=ps.crsWGS84)
+
+    shoreline_file = mipgui.file_dialogs.shoreline_file_location(os.getcwd)
+
+    print(f"Opening the shoreline file located at {shoreline_file}")        # TEST PRINT
+
+    dfShore = gpd.read_file(shoreline_file)
     if not ps.plotWGS84:
         dfShore = dfShore.to_crs(ps.crsAzEq)
     dfShore.plot(ax=ps.ax, color='k')
@@ -567,4 +598,4 @@ def shoreline(ps):
 
 # Invoke the main function here.
 if __name__ == "__main__":
-    ipSurvey()
+    ip_survey()

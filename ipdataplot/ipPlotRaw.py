@@ -9,7 +9,7 @@ Created on Thu Jun 28 10:50:36 2018
 import os
 import pickle
 import scipy as sp
-import commonSense as cs
+from ipdataproc import common_sense as cs
 from textwrap import wrap
 import matplotlib.pyplot as plt
 
@@ -92,7 +92,7 @@ def plot1Raw(at, ps):
 
     Parameters
     ----------
-    at  : fileClass object.
+    at  : FileClass object.
     ps : class containing plotting choices
     '''
     # Color.

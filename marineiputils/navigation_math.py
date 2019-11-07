@@ -8,7 +8,7 @@ Created on Fri May 25 15:57:31 2018
 
 import scipy as sp
 from scipy import linalg as linalg
-import commonSense as cs
+from ipdataproc import common_sense as cs
 
 
 def deg2rad(deg):

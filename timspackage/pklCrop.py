@@ -8,13 +8,13 @@ Created on Thu Jun 28 10:50:36 2018
 
 import os
 import pickle
-import commonSense as cs
+from ipdataproc import common_sense as cs
 
 
 class fileClass:
     pass
 
-
+# FIXME: ADD A PASSED VARIABLE TO THE FILE OBJECT THAT SETS THE FOLDER PATH BASED ON THE INITIAL CALLS TO THE GUI
 def pklCrop():
     folderPath = r'C:\temp\181112_eagle'
     folderName = cs.lastName(folderPath)

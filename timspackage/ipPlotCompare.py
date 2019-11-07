@@ -7,11 +7,10 @@ Created on Tue Mar  5 11:19:02 2019
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 
 import os
-import ipPlot as ipPlt
+from ipdataplot import ipPlot as ipPlt
 
 import scipy as sp
-import matplotlib.pyplot as plt
-import commonSense as cs
+
 
 class fileClass:
     pass

@@ -11,10 +11,9 @@ import os
 import scipy as sp
 import scipy.signal
 from scipy.signal import firwin
-from scipy.signal import convolve as sig_convolve
 import numpy as np
 from numpy import convolve as np_convolve
-import commonSense as cs
+from ipdataproc import common_sense as cs
 
 
 def artificialRaw():

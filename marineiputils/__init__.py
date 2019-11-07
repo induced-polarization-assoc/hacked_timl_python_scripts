@@ -1,12 +1,9 @@
 #!/bin/env python
-
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
-
-# FILE.py
 """
-Docstring
-#TODO: ALWAYS ALWAYS ALWAYS ADD A DOCSTRING! 
+Contains all the necessary metadata and can pull the whole package together.
 """
+from datetime import date
 
-if __name__ == "__main__":
-#TODO: ADD SCRIPT INVOCATION HERE!
+__author__ = "Joseph J. Radler"
+__date__ = date.today

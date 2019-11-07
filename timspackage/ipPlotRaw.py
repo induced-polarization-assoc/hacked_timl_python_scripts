@@ -92,7 +92,7 @@ def plot1Raw(at, ps):
 
     Parameters
     ----------
-    at  : fileClass object.
+    at  : FileClass object.
     ps : class containing plotting choices
     '''
     # Color.

@@ -8,7 +8,7 @@ Created on Mon May 14 16:31:21 2018
 
 import os
 import scipy as sp
-import commonSense as cs
+from ipdataproc import common_sense as cs
 from scipy import fftpack as spfftpack
 from datetime import datetime
 import pickle

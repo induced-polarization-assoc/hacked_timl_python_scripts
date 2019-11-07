@@ -8,7 +8,7 @@ Created on Tue May 22 16:08:57 2018
 
 import os
 import scipy as sp
-import commonSense as cs
+from ipdataproc import common_sense as cs
 from textwrap import wrap
 import pickle
 import matplotlib.pyplot as plt
@@ -116,7 +116,7 @@ def plot3All(a, ps):
 
     Parameters
     ----------
-    a  : list of fileClass objects loaded from the .pkl file.
+    a  : list of FileClass objects loaded from the .pkl file.
       0-indexed list of all file data read and processed.
     ps : class containing plotting choices
       See construction in ipPlot()
@@ -173,7 +173,7 @@ def plot3Mean(a, ps):
 
     Parameters
     ----------
-    a  : list of fileClass objects loaded from the .pkl file.
+    a  : list of FileClass objects loaded from the .pkl file.
       0-indexed list of all file data read and processed.
     ps : class containing plotting choices
       See construction in ipPlot()
@@ -243,7 +243,7 @@ def plot1Mean(at, ps):
 
     Parameters
     ----------
-    at  : fileClass object.
+    at  : FileClass object.
     ps : class containing plotting choices
       See construction in ipPlot()
     '''

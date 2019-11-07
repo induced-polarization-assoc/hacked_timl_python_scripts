@@ -7,7 +7,7 @@ Created on Tue Jan 15 15:47:04 2019
 
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 
-import commonSense as cs
+from ipdataproc import common_sense as cs
 import scipy as sp
 import scipy.linalg as la
 import matplotlib.pyplot as plt

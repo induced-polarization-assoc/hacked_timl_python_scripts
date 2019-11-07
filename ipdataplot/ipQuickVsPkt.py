@@ -9,7 +9,7 @@ Created on Tue May 22 16:08:57 2018
 import scipy as sp
 from textwrap import wrap
 import matplotlib.pyplot as plt
-import commonSense as cs
+from ipdataproc import common_sense as cs
 
 
 class fileClass:
@@ -45,7 +45,7 @@ def plot1VsPkt(at, ps):
 
     Parameters
     ----------
-    at  : fileClass object.
+    at  : FileClass object.
     ps : class containing plotting choices
       See construction in ipPlot()
     '''

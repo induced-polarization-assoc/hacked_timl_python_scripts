@@ -8,7 +8,7 @@ Created on Tue May 22 16:08:57 2018
 
 import os
 import scipy as sp
-import commonSense as cs
+from ipdataproc import common_sense as cs
 import pickle
 import matplotlib.pyplot as plt
 from textwrap import wrap

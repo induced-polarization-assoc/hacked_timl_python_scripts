@@ -8,8 +8,8 @@ Created on Tue May 22 16:08:57 2018
 
 import os
 import scipy as sp
-import commonSense as cs
-import ipMapMath as mm
+from ipdataproc import common_sense as cs
+from marineiputils import navigation_math as mm
 import pickle
 import matplotlib.pyplot as plt
 import geopandas as gpd
@@ -336,14 +336,14 @@ def plotStrip(at, ps, crop):
 
     # Reevaluate track vectors between each pair of consecutive GPS fixes.
     vParSeg = flatFix[1:, :] - flatFix[0:-1, :]
-    # Track vectors at each point, found from points before and after.
+    # Track vectors at each Point, found from points before and after.
     vParPt = flatFix[2:, :] - flatFix[0:-2, :]
     # Include segment parallels for the boundary fix points.
     vParPt = sp.vstack((vParSeg[0, :], vParPt, vParSeg[-1, :]))
     # Midpoints along the sequence of GPS fixes.
     midPts = (flatFix[1:, :] + flatFix[0:-1, :])/2
 
-    # Perpendicular vectors at each segment and fix point.
+    # Perpendicular vectors at each segment and fix Point.
     # Vector lengths are set to sideRange.
     vPerpSeg = ps.sideRange*mm.unit(mm.perp(vParSeg))  # (m)
     vPerpPt = ps.sideRange*mm.unit(mm.perp(vParPt))  # (m)
@@ -382,10 +382,10 @@ def plotStrip(at, ps, crop):
         verts = sp.vstack((vert01, vert2, vert34, vert5))
         # Vertices as tuples in a list.
         vertList = [tuple(row) for row in verts]
-        # Append the latest polygon vertices to the list of polygons.
+        # Append the latest Polygon vertices to the list of polygons.
         polyList.append(polygon(vertList))
 
-    # Geopandas data frame object containing each polygon in the list, along
+    # Geopandas data frame object containing each Polygon in the list, along
     # with colors.
     dfPoly = gpd.GeoDataFrame({'geometry': polyList,
                                'color': at.color[plottedPkts]})
