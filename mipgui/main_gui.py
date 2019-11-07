@@ -9,12 +9,18 @@ Docstring
 """
 import tkinter
 from pathlib import Path
+from tkinter import messagebox
 # from pathlib import PurePath
 
 import mipgui.file_dialogs
 import marineiputils.file_utils
+import mipgui.yes_no_questions
+
+# import timspackage.ipSurvey
 
 root = tkinter.Tk()
+
+# tkinter.mainloop()
 
 
 def main():
@@ -23,36 +29,47 @@ def main():
 
     :return:
     """
-    init_session_preferences()
-    set_analysis_preferences()
+    init_session()
+    analysis_session()
 
 
-def init_session_preferences():
+def init_session():
     """
     Set user preferences upon starting up the program.
     #FIXME: Perhaps this data should be stored in an object for faster referencing throughout the application
     :return:
     """
-    working_directory = Path.cwd()
-    dir_to_scan = mipgui.file_dialogs.print_input_path(working_directory)
-    backup_to = mipgui.file_dialogs.set_backup_path()
-    marineiputils.file_utils.make_data_dir_backup(dir_to_scan, backup_to)
-    save_plots = mipgui.file_dialogs.save_yes_no()
-    # TODO: make a file utility that makes the save directory with the appropriate structure for analysis
-    print(working_directory)
-    print(dir_to_scan)
-    print(backup_to)
-    print(save_plots)
+    # prompt the user to select the directory containing the raw data to be processed.
+    dir_to_process = mipgui.yes_no_questions.new_data_yesno()
+    if dir_to_process is not None:
+        print(f"The directory containing files to process is {dir_to_process}")
+        backup_location = mipgui.file_dialogs.set_backup_path(dir_to_process)
+
+        # make the backups automagically.
+        marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
+    else:
+        print("Nothing to do here, then. Moving on to analysis...")
+
+    # SET THE ANALYSIS PREFERENCES FOR THE SESSION
+    mipgui.file_dialogs.set_analysis_prefs()
+
+    # PROMPT THE USER IF THEY WANT TO SAVE THE OUTPUT AND IF SO, WHERE?
+    output_directory = mipgui.yes_no_questions.save_yes_no()
+    if output_directory is None:
+        print("There's really no point in just pulling the stuff up without saving it is there?")
+    else:
+        print(f"Saving the output of this analysis to the directory path: {output_directory}")
+        marineiputils.file_utils.construct_output_dir()
+        marineiputils.file_utils.check_output_structure()
 
 
-def set_analysis_preferences():
+def analysis_session():
     """
-    #FIXME: Perhaps this data should be stored in an object for faster referencing throughout the application
-    Set user preferences for analysis output.
-
+    Actual analysis calls to the appropriate scripts.
     :return:
     """
-    pass
+    print("Now performing analysis on the processed data as requested.")
+    # timspackage.ipSurvey()
 
 
 if __name__ == "__main__":

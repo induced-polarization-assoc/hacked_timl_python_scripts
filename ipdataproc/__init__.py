@@ -7,4 +7,3 @@
 Initialization of the `ipdataproc` Python Package
 
 """
-import ipSurvey

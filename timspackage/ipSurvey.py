@@ -1,29 +1,41 @@
+#!/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Tue May 22 16:08:57 2018
 
-@author: TimL
-"""
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 
+# ipSurvey.py
+"""
+Created on Tue May 22 16:08:57 2018
+Modified on Thursday, November 7th, 2019 by jjr
+@author: TimL, jjradler
+# TODO: lots to do and fix with refactoring this code.
+
+Survey report generating program. Requires the use of `timspackage/ipProcess.py` to manage the data.
+Depth data is found in the working directory passed in as a parameter by the main GUI interface.
+May also require the usage of 'pklCrop.py' and 'pklCropInfo.txt'.
+"""
+# import statements for all modules
+# python builtin modules
 import os
-import scipy as sp
-from ipdataproc import common_sense as cs
-from marineiputils import navigation_math as mm
 import pickle
+from pathlib import Path
+# from pathlib import PurePath
+
+# third-party imported modules (see requirements.txt)
 import matplotlib.pyplot as plt
 import geopandas as gpd
-# from shapely.geometry import Point as Point
-from shapely.geometry import Point
-# from shapely.geometry import LineString as LineString
+import scipy as sp
 from shapely.geometry import LineString
-# from shapely.geometry import Polygon as Polygon
+from shapely.geometry import Point
 from shapely.geometry import Polygon
 from cartopy import crs as ccrs
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from pathlib import Path
 
+# in-house generated module imports
 import mipgui.file_dialogs
+from ipdataproc import common_sense as cs
+from marineiputils import navigation_math as mm
+
 
 # TODO: write a set of test cases for this set of functions.
 
@@ -49,31 +61,80 @@ def ip_survey():
               'ytick.labelsize': 'x-large'}
     plt.rcParams.update(params)
 
-    # Class object holding plot settings.
+
+    # cs.emptyClass object holding plot settings (ps).
     ps = cs.emptyClass()
 
+    # Processed result choice.
+    # FIXME:  Make this an option with a popup window and perhaps radio buttons?
+    loadThis = 'zAnyF'
+
+    crop = True
+
+    # ORIGINAL/DEFAULT USER DEFINED PLOTTING OUTPUT OPTIONS
+    # Plotting choice.
+    # FIXME: Make this an option in the GUI interface.
+    ps.plotThis = 'zMag'
+
+    # Channel plotted.
+    ps.ch = 1
+
+    # Harmonic number of the xmitFund plotted.
+    ps.h = 1
+
+    # Index of the frequency in the list of odd harmonics.
+    ps.freqIdx = 4*ps.h
+
+    # Whether the color axis bounds are set manually.
+    manualColor = True
+    clipColorData = False
+    colMin = 1  # /(2*sp.pi*4)
+    colMax = 5.5  # /(2*sp.pi*4)
+
+    # Whether to plot line segments and points along the survey track.
+    ps.showLines = True
+
+    # Whehter to save Polygon and line shape files.
+    ps.saveShape = False
     # Whether to save the plotted datasets to txt files.
     ps.saveTxt = False
 
-    crop = True
+    ### USER-DEFINED NAVIGATIONAL PLOTTING OPTIONS
+    # Define an azimuthal equidistant Coordinate Reference System (CRS).
+    # longiCent = (ps.ext.longiMax + ps.ext.longiMin)/2
+    # latCent = (ps.ext.latMax + ps.ext.latMin)/2
+    longiCent = -122.50032907675
+    latCent = 47.617131187
+
+    # Offset distance to either side of the survey line color strip extends.
+    ps.sideRange = 3  # (m)
+
+    # Whether to plot in (longi, lat) or a projected reference.
+    ps.plotWGS84 = False
+
+    # The WGS84 latitude-longitude Coordinate Reference System (CRS).
+    ps.crsWGS84 = {'init': 'epsg:4326'}
+
+    ### USER-DEFINED DATA MANAGEMENT TASKS
+    ### USER-SELECTED FOLDER CONTAINING DATA AND CONFIG FILES
     # FIXME: ADD A MESSAGE THAT SETS THE DEFAULT LOCATION TO LOOK FOR DATA FILES
     # FIXME: change this to the file to open.
     default_open_location = Path.cwd()
-    ps.folderPath = mipgui.file_dialogs.print_input_path(default_open_location)
+    ps.folderPath = mipgui.file_dialogs.get_new_data(default_open_location)
     print(f"Opening the files in {ps.folderPath} for analysis...")
 
     # ps.folderPath = r'C:\Users\timl\Documents\IP_data_plots\190506_eagle'
     folder_name = cs.lastName(ps.folderPath)
 
-    # Processed result choice.
-    # FIXME:  Make this an option with a popup window
-    loadThis = 'zAnyF'
+
 
     # TODO: Add a routine in utilities that checks that the values of parsed data for navigation are REAL and finite
     # TODO:  If the values are not real, ask the user if this file should be skipped with a tkinter messagebox.
     # TODO:  Add a dialog box that asks the user which files to open for navigational data processing.
 
+    ### DEPTH FILE READING
     # Read the depth information for each file.
+    # TODO:  search the data path recursively for *depth*.txt and prompt the user to verify the filename/loc
     infoPath = os.path.join(ps.folderPath, 'depthInfo.txt')
     depthList = []
     with open(infoPath, 'r') as f:
@@ -90,64 +151,59 @@ def ip_survey():
             # Dump results in a list.
             depthList.append([fileDateStr, fileNum, depth])
 
-    # Loading the data.
+    ### LOADING THE PICKLE FILE FROM IPPROCESS.PY
+    # FIXME: Instead of this convoluted, very rigid scheme, why not just have the user load the files themselves in GUI?
     pklName = folder_name + '_' + loadThis + '.pkl'
     filePath = os.path.join(ps.folderPath, pklName)
     with open(filePath, 'rb') as f:  # Python 3: open(..., 'rb')
         a = pickle.load(f)
 
     # Which files will be plotted.
+    # FIXME: FIGURE OUT WHY THIS ISN'T WORKING PROPERLY FOR EXCLUDING NON-PLOTTED FILES (SANS NAV DATA)
     filesPlotted = cs.readFilesPlotted(a, ps.folderPath)
 
     # Crop information.
     if crop:
         cs.readCropInfo(a, ps.folderPath, 'pklCropInfo.txt')
 
-    # Plotting choice.
-    ps.plotThis = 'zMag'
+    ###################################################################################################
+    ###################################################################################################
+    # lOCATION OF PREVIOUS USER DEFINED PARAMETERS
+    ###################################################################################################
+    ###################################################################################################
 
-    # Channel plotted.
-    ps.ch = 1
-
-    # Harmonic number of the xmitFund plotted.
-    ps.h = 1
-    # Index of the frequency in the list of odd harmonics.
-    ps.freqIdx = 4*ps.h
-
-    # Whether the color axis bounds are set manually.
-    manualColor = True
-    clipColorData = False
-    colMin = 1  # /(2*sp.pi*4)
-    colMax = 5.5  # /(2*sp.pi*4)
-
-    # Whether to plot line segments and points along the survey track.
-    ps.showLines = True
-
-    # Whehter to save Polygon and line shape files.
-    ps.saveShape = False
-
+    ###################################################################################################
+    # INTIALIZATION OF DATA STRUCTURES FOR CARTOGRAPHIC PLOTS
+    ###################################################################################################
     # Rectangle defined by coordinate extrema along longi and lat axes.
     ps.ext = mm.coordExtrema(a)
 
-    # Offset distance to either side of the survey line color strip extends.
-    ps.sideRange = 3  # (m)
-
-    # Whether to plot in (longi, lat) or a projected reference.
-    ps.plotWGS84 = False
-
-    # The WGS84 latitude-longitude Coordinate Reference System (CRS).
-    ps.crsWGS84 = {'init': 'epsg:4326'}
-
-    # Define an azimuthal equidistant Coordinate Reference System (CRS).
-    longiCent = (ps.ext.longiMax + ps.ext.longiMin)/2
-    latCent = (ps.ext.latMax + ps.ext.latMin)/2
-    longiCent = -122.50032907675
-    latCent = 47.617131187
+    # CARTOPY COORDINATE SYSTEM CONSTRUCTION (SEE API REF)
     ccrsAzEq = ccrs.AzimuthalEquidistant(central_longitude=longiCent,
                                          central_latitude=latCent)
     # This Cartopy CRS (CCRS) can be converted into a `proj4` string/dict
     # compatible with GeoPandas.
     ps.crsAzEq = ccrsAzEq.proj4_init
+
+    # # Offset distance to either side of the survey line color strip extends.
+    # ps.sideRange = 3  # (m)
+    #
+    # # Whether to plot in (longi, lat) or a projected reference.
+    # ps.plotWGS84 = False
+    #
+    # # The WGS84 latitude-longitude Coordinate Reference System (CRS).
+    # ps.crsWGS84 = {'init': 'epsg:4326'}
+    #
+    # # Define an azimuthal equidistant Coordinate Reference System (CRS).
+    # # longiCent = (ps.ext.longiMax + ps.ext.longiMin)/2
+    # # latCent = (ps.ext.latMax + ps.ext.latMin)/2
+    # longiCent = -122.50032907675
+    # latCent = 47.617131187
+    # ccrsAzEq = ccrs.AzimuthalEquidistant(central_longitude=longiCent,
+    #                                      central_latitude=latCent)
+    # # This Cartopy CRS (CCRS) can be converted into a `proj4` string/dict
+    # # compatible with GeoPandas.
+    # ps.crsAzEq = ccrsAzEq.proj4_init
 
     # Initializations.
     ps.colMin = sp.inf
@@ -232,12 +288,16 @@ def ip_survey():
         ps.colMin = colMin
         ps.colMax = colMax
 
+    ###################################################################################################
+    #### NEW COMMONSENSE CLASS OBJECT CREATED HERE
+    ###################################################################################################
     # Big picture class containing master Polygon, color, and line lists for
     # all survey lines.
     bp = cs.emptyClass()
     bp.polyList = []
     bp.colorList = []
     bp.lineList = []
+
     for t in tList:
         if a[t].pktCount > 0:
             if not crop or (crop and sum(a[t].cropLogic) > 0):
@@ -252,6 +312,7 @@ def ip_survey():
     ps.ax.set_aspect('equal')
     ps.cmap = 'jet'
     ps.lineCol = 'k'  # Color of the basic track line shape.
+
     # Geopandas data frame object containing each Polygon in the list, along
     # with colors.
     df_poly = gpd.GeoDataFrame({'geometry': bp.polyList,
@@ -311,7 +372,7 @@ def ip_survey():
         df_poly.to_file(polyFilePath)
         df_line.to_file(lineFilePath)
 
-    # Shoreline plotting.
+    # Shoreline plotting (see function definition below!)
     shoreline(ps)
 
     # Reset the axis bounds after shorelines are plotted.
@@ -323,6 +384,7 @@ def ip_survey():
                                norm=plt.Normalize(vmin=ps.colMin,
                                                   vmax=ps.colMax))
     sm._A = []
+
     # colorbar() requires a scalar mappable, "sm".
     if ps.plotThis != 'crop':
         # cbaxes = ps.fig.add_axes([0.8, 0.1, 0.03, 0.8])
@@ -332,6 +394,7 @@ def ip_survey():
         cb.set_label(cbarLabel)
 
     plt.sca(ps.ax)
+
     # Axes labels.
     if not ps.plotWGS84:
         plt.xlabel('W-E (m)')
@@ -340,22 +403,28 @@ def ip_survey():
         plt.xlabel('Longitude (deg)')
         plt.ylabel('Latitude (deg)')
     plt.grid(b=True)
+
     # Plot title. Use notes recorded in one of the files plotted.
     tTitle = cs.find(filesPlotted, True)
+
 #    titleStr = ('%s Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
 #                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch], ps.h,
 #                   ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
+
     titleStr = ('Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
             % (ps.ch, a[tTitle].measStr[ps.ch], ps.h,
                ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
+
 #    titleStr = ('%s Ch %d (%s). Frequency = %.0f Hz.'
 #                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch],
 #                   ps.h*a[tTitle].xmitFund))
+
 #    titleStr = ('%s_%d Line %s. Ch %d (%s). Frequency = %.0f Hz. '
 #                'xmitFund = %.0f Hz.'
 #                % (a[tTitle].fileDateStr, a[tTitle].fileNum,
 #                   a[tTitle].descript, ps.ch, a[tTitle].measStr[ps.ch],
 #                   a[tTitle].freq[ps.freqIdx], a[tTitle].xmitFund))
+
     if manualColor or clipColorData:
         if ps.plotThis == 'zPhase':
             titleStr += (' \nColors clipped at %d mrad and %d mrad.'
@@ -377,14 +446,20 @@ def ip_survey():
 #            t = 4
 #            titleStr = ('%s_%d Line %s. Average Speed 1.7 kt.' %
 #                        (a[t].fileDateStr, a[t].fileNum, a[t].descript))
+
     plt.title(titleStr)
 #    clims = cb.get_clim()
 #    print('\n\ncolMin = %.3f\ncolMax = %.3f' % (clims[0], clims[1]))
 
 
 def despike(arra, thresh):
-    # Despike the array of data values based on the threshold spike size.
-    # Replace spike values with the average of data values on either side.
+    """
+    Despike the array of data values based on the threshold spike size.
+    Replace spike values with the average of data values on either side.
+    :param arra:
+    :param thresh:
+    :return:
+    """
     for idx in range(1, len(arra) - 1):
         if (sp.absolute(arra[idx] - arra[idx - 1]) > thresh and
                 sp.absolute(arra[idx] - arra[idx + 1]) > thresh):
