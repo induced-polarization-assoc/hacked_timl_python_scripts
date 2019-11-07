@@ -6,38 +6,77 @@ Set of file-handling utilities for the Marine IP Analysis application.
 from pathlib import Path
 from pathlib import PurePath
 import datetime
+import sys
+import shutil
+
+import mipgui.yes_no_questions
 
 
-def make_data_dir_backup(data_folder_path, backup_path):
+def make_data_dir_backup(data_folder_path, backup_root):
     """
     .. make_data_folder_backup(data_folder_path)
 
     :param data_folder_path:
-        Path for the raw data folder as defined by the user via the GUI.
-    :param backup_path:
-        Path for the raw data backup folder -- essentially a copy of the target folder for the analysis.
+        Path --> for the raw data folder as defined by the user via the GUI.
+    :param backup_root:
+        Path --> Path for the raw data backup folder -- essentially a copy of the target folder for the analysis.
     :return status:
-        Success or failure status indicator code indicating if a backup was successful.
+        Bool --> Success or failure status indicator code indicating if a backup was successful.
     """
-    current_time = datetime.datetime.now().time()
-    current_time = str(current_time)
-    backup_dirname = PurePath(data_folder_path).name
+    current_time = str(datetime.datetime.now().time())
+    current_time.replace(':', '').replace(' ', '').replace('.', '')
+    backup_name = PurePath(data_folder_path).name
 
-    print(f"User has selected the path {backup_path} to save backups of the data files!")
+    print(f"User has selected the path {backup_root} to save backups of the data files!")
 
-    # backup_name = backup_dirname + "_backup" + iso_date + iso_time
-    backup_name = backup_dirname + "_backup" + current_time
-    print(backup_name)
-    print(f"Now making a new backup directory called {backup_name} for you at {backup_path}...")
-    backup_temp = Path.mkdir(backup_path, parents=False).rename(backup_name)
+    # backup_name = backup_name + "_backup" + iso_date + iso_time
+    backup_name = backup_name + "_backup" + current_time
+    # backup_dir: Union[Path, Any] = Path(backup_name)
+
+    print(f"Now making a new backup directory called {backup_name} for you at {backup_root}...")
+
+    # backup_dir.mkdir(backup_root, parents=False)
+    # Path.joinpath(backup_root, backup_dir).rename(backup_name)
 
     # FIXME:  There is a problem with the main script when it comes to making this directory. It never
-    # FIXME:    Gets past this point in the code. 
-    backup_path = Path(backup_name)
-    if Path.is_dir(backup_path):
-        print("Success! The backup has been generated!")
+    # FIXME:    Gets past this point in the code.
+    # backup_root = backup
+    # if Path.is_dir(backup):
+    #     print("Success! The backup has been generated!")
+    # else:
+    #     print("The backup failed to make the directory as anticipated.")
+    backup_path = make_directory_at(backup_root, backup_name)
+    check_struct = check_output_structure(backup_path, data_folder_path, backup_root)
+    copy_backup_files()
+    val_copy = validate_file_copy()
+
+    if check_struct and val_copy:
+        return True
     else:
-        print("The backup failed to make the directory as anticipated.")
+        return False
+
+
+def check_output_structure(backup_dir_path, data_folder_path, backup_path):
+    """
+    Check and validate the existence of the backup path directory
+    :return bool:
+    """
+    if Path.is_dir(backup_dir_path):
+        print("Success! The backup has been generated!")
+        return True
+
+    else:
+        retry = mipgui.yes_no_questions.retry_backup()
+
+        if retry:
+            make_data_dir_backup(data_folder_path, backup_path)
+        elif not retry:
+            print("skipping...")
+            pass
+        else:
+            print("Process cancelled. Exiting...")
+            sys.exit()
+        return False
 
 
 def construct_output_dir():
@@ -61,14 +100,6 @@ def construct_output_filestruct():
     print("Let's pretend this got done, okay? Just keep this between us.")
 
 
-def check_output_structure():
-    """
-    Validate the output file structure before copying the files over.
-    :return:
-    """
-    pass
-
-
 def copy_backup_files():
     """
     Copy the backup files from the folders over to an exact replica directory located at the
@@ -77,3 +108,24 @@ def copy_backup_files():
     :return:
     """
     pass
+
+
+def make_directory_at(backup_root, name):
+    """
+
+    :return backup:
+        Path --> directory path for the backup
+    """
+    backup = str(backup_root) + str(name)
+
+    return backup
+
+
+def validate_file_copy():
+    """
+
+
+    :return bool:
+    """
+    # check that all the files in the original directory are mirrored in the backup directory.
+    return True

@@ -60,7 +60,6 @@ def init_session():
     else:
         print(f"Saving the output of this analysis to the directory path: {output_directory}")
         marineiputils.file_utils.construct_output_dir()
-        marineiputils.file_utils.check_output_structure()
 
 
 def analysis_session():

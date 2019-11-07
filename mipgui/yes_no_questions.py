@@ -126,3 +126,12 @@ def save_user_analysis_prefs():
     return True
 
 
+def retry_backup():
+    """
+    Prompts the user whether they'd like to retry making a backup directory.
+    :return bool --> retry:
+    """
+    retry = tkinter.messagebox.askyesnocancel('Backup Failure',
+                                              'The backup failed to make the directory as anticipated.\nRetry?'
+                                              )
+    return retry
