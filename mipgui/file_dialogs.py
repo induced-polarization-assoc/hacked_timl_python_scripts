@@ -57,25 +57,22 @@ def set_backup_path(input_directory):
     usr_says = mipgui.yes_no_questions.make_backup_yes_no(input_directory)
     if usr_says is True:
         print("You have opted to make a backup! Good thinking!")
-        backup_location = tkinter.filedialog.askdirectory(parent=root,
-                                                          initialdir=Path.cwd(),
-                                                          title='Select Backup Location for Raw Data'
-                                                          )
+        return tkinter.filedialog.askdirectory(parent=root,
+                                               initialdir=Path.cwd(),
+                                               title='Select Backup Location for Raw Data'
+                                               )
     else:
-        verify = tkinter.messagebox.askquestion('You Sure?',
-                                                'Your data will not be protected from possible corruption!',
-                                                icon='warning'
-                                                )
-        if verify is 'yes':
+        verify = tkinter.messagebox.askyesno('You Sure?',
+                                             'Your data will not be protected from possible corruption!',
+                                             icon='warning'
+                                             )
+        if verify is True:
             tkinter.messagebox.showinfo('Information', 'You have opted not to make a backup!')
-            mipgui.file_dialogs.root.destroy()
-            backup_location = None
+            # mipgui.file_dialogs.root.destroy()
+            # backup_location = None
+            return None
         else:
-            backup_location = mipgui.file_dialogs.set_backup_path()
-
-    print(f"Backup location set at:\t {backup_location}!")  # TEST PRINT
-
-    return backup_location
+            return set_backup_path(input_directory)
 
 
 def set_save_path():

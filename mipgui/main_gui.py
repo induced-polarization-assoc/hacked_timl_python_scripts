@@ -44,11 +44,11 @@ def init_session():
     if dir_to_process is not None:
         print(f"The directory containing files to process is {dir_to_process}")
         backup_location = mipgui.file_dialogs.set_backup_path(dir_to_process)
-
-        # make the backups automagically.
-        marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
-    else:
-        print("Nothing to do here, then. Moving on to analysis...")
+        if backup_location is not None:
+            # make the backups automagically.
+            marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
+    # else:
+    #     print("Nothing to do here, then. Moving on to analysis...")
 
     # SET THE ANALYSIS PREFERENCES FOR THE SESSION
     mipgui.file_dialogs.set_analysis_prefs()
