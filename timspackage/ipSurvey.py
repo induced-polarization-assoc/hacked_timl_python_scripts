@@ -252,28 +252,28 @@ def ip_survey():
     ps.lineCol = 'k'  # Color of the basic track line shape.
     # Geopandas data frame object containing each Polygon in the list, along
     # with colors.
-    dfPoly = gpd.GeoDataFrame({'geometry': bp.polyList,
+    df_poly = gpd.GeoDataFrame({'geometry': bp.polyList,
                                'color': bp.colorList})
-    dfPoly.crs = ps.crsAzEq
+    df_poly.crs = ps.crsAzEq
 
-    dfLine = gpd.GeoDataFrame({'geometry': bp.lineList})
-    dfLine.crs = ps.crsAzEq
+    df_line = gpd.GeoDataFrame({'geometry': bp.lineList})
+    df_line.crs = ps.crsAzEq
 
     # Transform back to (longi,lat), if requested.
     if ps.plotWGS84:
-        dfLine = dfLine.to_crs(ps.crsWGS84)
-        dfPoly = dfPoly.to_crs(ps.crsWGS84)
+        df_line = df_line.to_crs(ps.crsWGS84)
+        df_poly = df_poly.to_crs(ps.crsWGS84)
 
-    dfPoly.plot(ax=ps.ax, column='color', cmap=ps.cmap,
+    df_poly.plot(ax=ps.ax, column='color', cmap=ps.cmap,
                 vmin=ps.colMin, vmax=ps.colMax)
 
     if ps.showLines:
-        dfLine.plot(ax=ps.ax, color=ps.lineCol)
+        df_line.plot(ax=ps.ax, color=ps.lineCol)
 
     # Transform back to (longi,lat).
     if ~ps.plotWGS84:
-        dfLine = dfLine.to_crs(ps.crsWGS84)
-        dfPoly = dfPoly.to_crs(ps.crsWGS84)
+        df_line = df_line.to_crs(ps.crsWGS84)
+        df_poly = df_poly.to_crs(ps.crsWGS84)
 
     # Keep axis bounds from before the shorelines are plotted.
     xlimLeft, xlimRight = plt.xlim()
@@ -306,8 +306,8 @@ def ip_survey():
         # FIXME:  Change the shape folder to something automatic
         polyFilePath = os.path.join(shapeFolder, polyFileName)
         lineFilePath = os.path.join(shapeFolder, lineFileName)
-        dfPoly.to_file(polyFilePath)
-        dfLine.to_file(lineFilePath)
+        df_poly.to_file(polyFilePath)
+        df_line.to_file(lineFilePath)
 
     # Shoreline plotting.
     shoreline(ps)
@@ -323,7 +323,7 @@ def ip_survey():
     sm._A = []
     # colorbar() requires a scalar mappable, "sm".
     if ps.plotThis != 'crop':
-#        cbaxes = ps.fig.add_axes([0.8, 0.1, 0.03, 0.8])
+        # cbaxes = ps.fig.add_axes([0.8, 0.1, 0.03, 0.8])
         divider = make_axes_locatable(ps.ax)
         cax1 = divider.append_axes("right", size="10%", pad=0.05)
         cb = plt.colorbar(sm, cax=cax1)
@@ -575,25 +575,21 @@ def shoreline(ps):
     .. function:: shoreline()
     Geodataframe containing shorelines to draw as a layer on the chart.
     :param ps:
-    :return:
+        Plotting parameter object.
     """
-    # dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
+    # df_shore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
     #                          r'\181112_eagle\NOAAShorelineDataExplorer'
     #                          r'\NSDE61619\CUSPLine.shp'),
     #                         crs=ps.crsWGS84)
-#    dfShore = gpd.read_file((r'C:\Users\timl\Documents\IP_data_plots'
-#                             r'\190506_eagle\NOAA Shoreline Data Explorer'
-#                             r'\CUSPLine.shp'),
-#                            crs=ps.crsWGS84)
 
     shoreline_file = mipgui.file_dialogs.shoreline_file_location(os.getcwd)
 
     print(f"Opening the shoreline file located at {shoreline_file}")        # TEST PRINT
 
-    dfShore = gpd.read_file(shoreline_file)
+    df_shore = gpd.read_file(shoreline_file)
     if not ps.plotWGS84:
-        dfShore = dfShore.to_crs(ps.crsAzEq)
-    dfShore.plot(ax=ps.ax, color='k')
+        df_shore = df_shore.to_crs(ps.crsAzEq)
+    df_shore.plot(ax=ps.ax, color='k')
 
 
 # Invoke the main function here.
