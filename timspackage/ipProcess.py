@@ -34,6 +34,7 @@ def ipProcess():
     # saveThis = save_this
     # Number nonzero frequencies saved to the .pkl file with the zero frequency
     # freqCount = 200
+    # TODO: ADD THE FOLLOWING PARAMETERS FROM SESSION/PROCOPTS/ANALYSIS:file_name, raw_data_path, save_this
     freqCount = freq_span
 
     # Whether to save absolute phase results.
@@ -87,12 +88,13 @@ def ipProcess():
     file_array = file_array[sort_key]
     # file_number_array = file_number_array[sort_key]
 
-    # List of class instances containing recorded data.
+    # List of FileClass objects instantiated above.
     file_obj_array = []
+    # Iterate over all file objects in the file array structure `file_obj_array`
     for t in range(len(file_array)):
         file_obj_array.append(fileClass(file_name, raw_data_path, save_this))
 
-    # Read the data in from the files.
+    # Read the data in from the files iteratively
     for t in range(len(file_obj_array)):
         # Packet choice if saving raw voltages.
         rawPkt = 102  # 1-indexed.
