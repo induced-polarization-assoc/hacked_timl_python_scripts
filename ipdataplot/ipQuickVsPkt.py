@@ -41,7 +41,7 @@ def ipQuickVsPkt(at, ch=1, h=1, plotThis='zPhase', crop=False):
 
 def plot1VsPkt(at, ps):
     '''
-    Plots a result from 1 file vs packet number.
+    Plots file_obj_array result from 1 file vs packet number.
 
     Parameters
     ----------
@@ -94,7 +94,7 @@ def plot1VsPkt(at, ps):
     titleStr = ('%s_%d Ch %d (%s). h = %d = %.0f Hz. xmitFund = %.0f Hz. %s'
                 % (at.fileDateStr, at.fileNum, ps.ch, at.measStr[ps.ch], ps.h,
                    at.freq[freqIdx], at.xmitFund, at.major))
-    # Wrap text at a set character length.
+    # Wrap text at file_obj_array set character length.
     titleStr = '\n'.join(wrap(titleStr, 75))
     plt.title(titleStr)
     plt.xlabel('Packet')

@@ -66,7 +66,7 @@ def coordExtrema(a):
 
     Returns
     -------
-    ext : float (deg), fields of a class
+    ext : float (deg), fields of file_obj_array class
       longiMin, longiMax, latMin, latMax
     """
     # Extreme values of longitude and latitude in the survey.
@@ -98,7 +98,7 @@ def coordExtrema(a):
 
 
 def cableRange(leng, depth):
-    # Estimate the horizontal displacement of the first electrode using a
+    # Estimate the horizontal displacement of the first electrode using file_obj_array
     # simple static catenary shape for the cable.
     # Equations from:
     # http://ricerca.ismar.cnr.it/CRUISE_REPORTS/1990-1999/

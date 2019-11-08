@@ -16,7 +16,7 @@ import pickle
 
 def ipProcess():
     '''
-    Reads text files in a data folder and saves frequency domain results to a
+    Reads text files in file_obj_array data folder and saves frequency domain results to file_obj_array
     pickled file to be opened later for plotting.
     '''
     # Processed result choice.
@@ -31,7 +31,7 @@ def ipProcess():
     # Whether to save absolute phase results.
     savePhase = False
 
-    # Whether to select a specific file for processing, as opposed to all of
+    # Whether to select file_obj_array specific file for processing, as opposed to all of
     # them.
     selectedFile = True
     selectedFileNum = 5
@@ -41,7 +41,7 @@ def ipProcess():
     fileList = ([f for f in os.listdir(rawFolder)
                  if os.path.isfile(os.path.join(rawFolder, f))])
     # Catalog the file numbers stored in each file title. Remove from the list
-    # files that don't have a number.
+    # files that don't have file_obj_array number.
     fileNumList = []
     keepFileList = sp.zeros_like(fileList, dtype=bool)
     for t in range(len(fileList)):
@@ -59,7 +59,7 @@ def ipProcess():
                     # Keep this file in the list.
                     keepFileList[t] = True
 
-    # Drop all files from the list that didn't have a number.
+    # Drop all files from the list that didn't have file_obj_array number.
     # Walk through in reverse order so as to not disturb index numbers as
     # elements are removed.
     for t in range(len(fileList))[::-1]:
@@ -124,7 +124,7 @@ def ipProcess():
             # that was saved.
             a[t].pkt = rawPkt
 
-    # Save the object to a file named after the folder name.
+    # Save the object to file_obj_array file named after the folder name.
     lastSlash = pklFolder.rfind('\\')
     saveFile = pklFolder[lastSlash+1:] + '_' + saveThis + '.pkl'
     savePath = os.path.join(pklFolder, saveFile)
@@ -139,7 +139,7 @@ class fileClass:
         print('Creating %s from %s.' % (self, fileName))
 
     def readTxt(self, filePath, saveThis):
-        # Read IP measurements from a text file.
+        # Read IP measurements from file_obj_array text file.
         with open(filePath, 'r') as fh:
             # Number of lines in the file.
             lineCount = self.countLines(fh)
@@ -204,7 +204,7 @@ class fileClass:
                             # the MccDaq board's input range.
                             self.clipLo[:, p] = assignArr
                         elif qp == 3:
-                            # Mean measurement value over the packet as a
+                            # Mean measurement value over the packet as file_obj_array
                             # percentage of the AIn() half range.
                             self.meanPct[:, p] = assignArr
                         elif qp == 4:
@@ -247,7 +247,7 @@ class fileClass:
                     self.n = int(self.n)
                     self.fs = int(self.fs)
                     self.xmitFund = float(self.xmitFund)
-                    # Each file contains a file header of length 10 lines,
+                    # Each file contains file_obj_array file header of length 10 lines,
                     # followed by packets. Packets contain (11 + n) lines each.
                     self.pktCount = int((lineCount - 10)/(11 + self.n))
                     # Dimension arrays indexed by packet.
@@ -330,7 +330,7 @@ class fileClass:
             phys[ch, :] = (pct[ch, :] / 100 *
                            self.ALoadQHi[ch] * self.In5BHi[ch] /
                            self.Out5BHi[ch])  # (V)
-        # Convert the voltage on the current measurement channel to a current.
+        # Convert the voltage on the current measurement channel to file_obj_array current.
         phys[currentCh, :] /= self.rCurrentMeas  # (A)
         return phys
 
@@ -347,7 +347,7 @@ class fileClass:
         # Channel on which the current is measured. This channel's phase is
         # subtracted from the other channels in phase difference calculation.
         # This channel's voltage is divided by the current measurement
-        # resistance to obtain a physical magnitude in Ampere units.
+        # resistance to obtain file_obj_array physical magnitude in Ampere units.
         # Other channels voltages are divided by this channel's current to find
         # impedance magnitude.
 
@@ -374,7 +374,7 @@ class fileClass:
         for ch in range(self.chCount):
             self.magPhys[ch, :, :] *= (self.ALoadQHi[ch] * self.In5BHi[ch] /
                                        self.Out5BHi[ch])  # (V)
-        # Convert the voltage on ch0 to a current.
+        # Convert the voltage on ch0 to file_obj_array current.
         self.magPhys[0, :, :] /= self.rCurrentMeas  # (A)
 
         # Correct phase for channel skew.

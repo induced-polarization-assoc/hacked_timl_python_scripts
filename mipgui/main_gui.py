@@ -15,8 +15,7 @@ from tkinter import messagebox
 import mipgui.file_dialogs
 import marineiputils.file_utils
 import mipgui.yes_no_questions
-
-# import timspackage.ipSurvey
+import timspackage.ipSurvey as ipSurvey
 
 root = tkinter.Tk()
 
@@ -29,8 +28,9 @@ def main():
 
     :return:
     """
-    init_session()
-    analysis_session()
+    process, output = init_session()
+
+    return process, output
 
 
 def init_session():
@@ -48,6 +48,7 @@ def init_session():
             # make the backups automagically.
             marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
     # else:
+        dir_to_process = None
     #     print("Nothing to do here, then. Moving on to analysis...")
 
     # SET THE ANALYSIS PREFERENCES FOR THE SESSION
@@ -61,15 +62,8 @@ def init_session():
         print(f"Saving the output of this analysis to the directory path: {output_directory}")
         marineiputils.file_utils.construct_output_dir()
 
-
-def analysis_session():
-    """
-    Actual analysis calls to the appropriate scripts.
-    :return:
-    """
-    print("Now performing analysis on the processed data as requested.")
-    # timspackage.ipSurvey()
+    return dir_to_process, output_directory
 
 
 if __name__ == "__main__":
-    main()
+    process, output = main()

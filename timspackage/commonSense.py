@@ -42,7 +42,7 @@ def saveImg(folderPath, imgFolder, imgFile):
 
 def readFilesPlotted(a, folder):
     infoPath = os.path.join(folder, 'filesPlotted.txt')
-    # Initialize a boolean array corresponding to the indices of 'a', telling
+    # Initialize file_obj_array boolean array corresponding to the indices of 'file_obj_array', telling
     # which files are to be plotted.
     filesPlotted = sp.zeros(len(a), dtype=bool)
     with open(infoPath, 'r') as f:

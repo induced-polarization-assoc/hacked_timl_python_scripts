@@ -1,8 +1,5 @@
 #!/bin/env python
-
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
-
-# FILE.py
 """
 Docstring
 #TODO: ALWAYS ALWAYS ALWAYS ADD A DOCSTRING!
@@ -10,7 +7,6 @@ Docstring
 """
 import tkinter
 import sys
-from pathlib import Path
 from tkinter import messagebox
 
 import mipgui.file_dialogs
@@ -41,7 +37,7 @@ def new_data_yesno():
         else:
             new_data_yesno()
     else:
-        print("Somehow a different value than the choices presented was entered. Quitting now...")
+        print("Somehow file_obj_array different value than the choices presented was entered. Quitting now...")
         sys.exit()
 
 # TODO: INSTEAD OF ALL THIS SPAGHETTI CODE PERHAPS THIS SHOULD JUST GO DOWN THE LINE TO SET VARIABLES...
@@ -49,7 +45,7 @@ def new_data_yesno():
 
 def analysis_yesno():
     """
-    Asks the user if they wish to plot existing serialized ('.pkl') data processed in a previous session.
+    Asks the user if they wish to plot existing serialized ('.pkl') data processed in file_obj_array previous session.
     If they wish to do so, then run the program and output data to console window and additional plotting
     popup windows.
     :return:
@@ -65,13 +61,13 @@ def make_backup_yes_no(input_directory):
     .. function:: make_backup_yes_no()
 
     :Summary:
-        GUI window to prompt the user whether they would like to make a backup of the current data
+        GUI window to prompt the user whether they would like to make file_obj_array backup of the current data
         directory so that it is not corrupted by any subsequent analysis or file handling operations.
 
     :param input_directory:
         The data input directory selected by the user.
     :return answer:
-        Yes or No saved as a True or False value.
+        Yes or No saved as file_obj_array True or False value.
     """
     question = f"Would you like to back up the data folder {input_directory} now?"
     return tkinter.messagebox.askyesno('Make Backups?', question)
@@ -123,7 +119,7 @@ def save_user_analysis_prefs():
 
 def retry_backup():
     """
-    Prompts the user whether they'd like to retry making a backup directory.
+    Prompts the user whether they'd like to retry making file_obj_array backup directory.
     :return bool --> retry:
     """
     retry = tkinter.messagebox.askyesnocancel('Backup Failure',

@@ -333,8 +333,8 @@ def ipPlot(inFolder, inFileNums, inPlotThis):
                 ps.color = color3[colorIdx]
                 ps.stdColor = stdColor3[colorIdx]
 #            ps.titleStr = ('%s Ch %d (%s). xmitFund = %.2f Hz. %s'
-#                           % (a[t].fileDateStr, ch, a[t].measStr[ch],
-#                              a[t].xmitFund, a[t].major))
+#                           % (file_obj_array[t].fileDateStr, ch, file_obj_array[t].measStr[ch],
+#                              file_obj_array[t].xmitFund, file_obj_array[t].major))
             ps.titleStr = ('%s Ch %d (%s). %s'
                            % (a[t].fileDateStr, ch, a[t].measStr[ch],
                               a[t].major))
@@ -353,7 +353,7 @@ def ipPlot(inFolder, inFileNums, inPlotThis):
             else:
                 # Without legend.
                 ps.legStr = '_nolegend_'
-#            ps.legStr = ('%d. %s' % (a[t].fileNum, a[t].descript))
+#            ps.legStr = ('%d. %s' % (file_obj_array[t].fileNum, file_obj_array[t].descript))
             if chTogether:
                 ps.titleStr = ('%s_%d %s. xmitFund = %.1f Hz. %s'
                                % (a[t].fileDateStr, a[t].fileNum,
@@ -365,7 +365,7 @@ def ipPlot(inFolder, inFileNums, inPlotThis):
                     ps.titleStr = '%s ' % (a[t].minor) + ps.titleStr
                 else:
                     ps.legStr = '%s ' % (a[t].minor) + ps.legStr
-#            if not sp.any(a[t].fileNum ==
+#            if not sp.any(file_obj_array[t].fileNum ==
 #                          (32 + sp.array([1, 3, 5, 7, 9, 11, 13, 15]))):
 #                ps.legStr = '_nolegend_'
             # The plot title is taken from the target file.
@@ -378,7 +378,7 @@ def ipPlot(inFolder, inFileNums, inPlotThis):
             if meanBool:
                 # Result Y data.
                 ps.yVal = res[t].yVal[ch, ...]
-#                ps.legStr += ' (Avg. of %d packets)' % (a[t].pktCount)
+#                ps.legStr += ' (Avg. of %d packets)' % (file_obj_array[t].pktCount)
                 if stdBool:
                     ps.titleStr += ' Shaded patches are means +/- 1 STD.'
                 if not subtractAdj and not subtract1:

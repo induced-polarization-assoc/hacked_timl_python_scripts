@@ -47,6 +47,6 @@ In a near-future refactor, we will have user-defined configuration files with cl
 ## Data Analysis Scripts:
 
 1. Select which script to use:
-   1. `ip_survey.py` is used for fieldwork and surveys requiring visualizations on charts of where the largest real-impedances are located on Earth. 
+   1. `ipSurvey.py` is used for fieldwork and surveys requiring visualizations on charts of where the largest real-impedances are located on Earth.
    2. `ipQuickShow.py` will allow you to select the “track” or test run of interest and plot the apparent real-magnitude as a function of packet number. 
    3. `ipScatterEverything` will produce a scatterplot on one channel for 2*ComplexZMag with respect to packet number. 

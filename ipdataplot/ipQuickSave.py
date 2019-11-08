@@ -48,7 +48,7 @@ def ipQuickSave():
     # Harmonic number of the xmitFund plotted.
     hList = [1]
 
-    # Name of a folder on the save path.
+    # Name of file_obj_array folder on the save path.
     if crop:
         highFolder = 'cropQuickVsPkt'
     else:

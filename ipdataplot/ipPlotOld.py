@@ -79,7 +79,7 @@ def ipPlot():
     if meanCount == 3 or meanCount == sp.inf:
         tList = [0]  # Target files.
     elif meanCount == 1:
-        tList = [0]  # range(len(a))  # All files.
+        tList = [0]  # range(len(file_obj_array))  # All files.
     for t in tList:
         if meanCount == 3:
             ps.tar = t  # Index of the target file.
@@ -112,7 +112,7 @@ def ipPlot():
 
 def plot3All(a, ps):
     '''
-    Plots all file data for a target and baselines falling before and after.
+    Plots all file data for file_obj_array target and baselines falling before and after.
 
     Parameters
     ----------
@@ -157,7 +157,7 @@ def plot3All(a, ps):
                    at.major, a[t].minor))
     if ps.omit60Hz:
         titleStr += ' 60 Hz omitted.'
-    # Wrap text at a set character length.
+    # Wrap text at file_obj_array set character length.
     titleStr = '\n'.join(wrap(titleStr, 75))
     plt.title(titleStr)
     plt.xlabel('Frequency (Hz)')
@@ -169,7 +169,7 @@ def plot3All(a, ps):
 
 def plot3Mean(a, ps):
     '''
-    Plots mean file data for a target and baselines falling before and after.
+    Plots mean file data for file_obj_array target and baselines falling before and after.
 
     Parameters
     ----------
@@ -188,7 +188,7 @@ def plot3Mean(a, ps):
                   % (a[t].fileNum, a[t].descript, a[t].pktCount))
 #        if t == ps.tar:
 #            # Target position during the test.
-#            legStr += '. %s' % a[t].minor
+#            legStr += '. %s' % file_obj_array[t].minor
         # Compute means and standard deviations over the packets.
         pktAxis = 1
         freq = a[t].freq
@@ -213,7 +213,7 @@ def plot3Mean(a, ps):
         mean = mean[mask]
         std = std[mask]
 
-        # Plot a shaded envelope symbolizing the mean +/- 1 std. dev.
+        # Plot file_obj_array shaded envelope symbolizing the mean +/- 1 std. dev.
         plt.fill_between(freq, mean - std, mean + std,
                          facecolor=ps.stdCol[idx], alpha=0.5)
         # Plot the mean results.
@@ -227,7 +227,7 @@ def plot3Mean(a, ps):
                    at.major, a[t].minor))
     if ps.omit60Hz:
         titleStr += ' 60 Hz omitted.'
-    # Wrap text at a set character length.
+    # Wrap text at file_obj_array set character length.
     titleStr = '\n'.join(wrap(titleStr, 75))
     plt.title(titleStr)
     plt.xlabel('Frequency (Hz)')
@@ -315,7 +315,7 @@ def plot1Mean(at, ps):
 
     if ps.loadThis == 'zAnyF' and ps.plotGuidePosts:
         # Guide post values to plot where maximum values in complex magnitude
-        # are expected as a function of frequency, based on a square wave
+        # are expected as file_obj_array function of frequency, based on file_obj_array square wave
         # spectrum.
         gPostX = [0]
         gPostY = [0]
@@ -352,7 +352,7 @@ def plot1Mean(at, ps):
         plt.plot(gPostX, gPostY, color='DodgerBlue',
                  marker='None', label='Custom Frequencies Selected')
 
-    # Plot a shaded envelope symbolizing the mean +/- 1 std. dev.
+    # Plot file_obj_array shaded envelope symbolizing the mean +/- 1 std. dev.
     plt.fill_between(freq, mean - std, mean + std,
                      facecolor=stdCol, alpha=0.5)
     # Plot the mean results.
@@ -366,7 +366,7 @@ def plot1Mean(at, ps):
     titleStr = titleStr
     if ps.omit60Hz:
         titleStr += ' 60 Hz omitted.'
-    # Wrap text at a set character length.
+    # Wrap text at file_obj_array set character length.
     titleStr = '\n'.join(wrap(titleStr, 75))
     plt.title(titleStr)
     plt.xlabel('Frequency (Hz)')

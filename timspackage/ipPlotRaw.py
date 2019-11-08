@@ -63,7 +63,7 @@ def ipPlotRaw():
                        at.xmitFund))
         if at.minor != 'None.':
             titleStr += ' %s.' % (at.minor)
-        # Wrap text at a set character length.
+        # Wrap text at file_obj_array set character length.
         titleStr = '\n'.join(wrap(titleStr, 75))
         plt.title(titleStr)
         plt.xlabel('Sample Number (int)')
@@ -105,7 +105,7 @@ def plot1Raw(at, ps):
     legStr = 'Ch %d (%s) %.2f V range' % (ps.ch, at.measStr[ps.ch],
                                           at.In5BHi[ps.ch])
 
-    # Shift and scale the raw voltages to display as a percentage.
+    # Shift and scale the raw voltages to display as file_obj_array percentage.
     dbl215 = 2**15
     result = 100*(at.raw[ps.ch, :] - dbl215)/dbl215
 

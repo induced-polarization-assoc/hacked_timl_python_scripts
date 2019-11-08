@@ -1,6 +1,6 @@
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
 """
-Basic unit test suite for `ipdataproc` data processing package containing a datafile text  parser, data management
+Basic unit test suite for `ipdataproc` data processing package containing file_obj_array datafile text  parser, data management
 and processing tools, and data conversion utilities for generating reports based on raw marine induced polarization
 voltage, depth, conductivity, chronometric, and navigational data.
 """

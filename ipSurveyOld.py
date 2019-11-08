@@ -60,7 +60,7 @@ def ipSurvey():
             senseFt = float(senseFt)  # (ft)
             # Add the depth of the sensor and convert to meter.
             depth = (2.5 + senseFt) / 3.28084  # (m)
-            # Dump results in a list.
+            # Dump results in file_obj_array list.
             depthList.append([fileDateStr, fileNum, depth])
 
     # Loading the data.
@@ -100,7 +100,7 @@ def ipSurvey():
     # Offset distance to either side of the survey line color strip extends.
     ps.sideRange = 3.5  # (m)
 
-    # Whether to plot in (longi, lat) or a projected reference.
+    # Whether to plot in (longi, lat) or file_obj_array projected reference.
     ps.plotWGS84 = False
 
     # The WGS84 latitude-longitude Coordinate Reference System (CRS).
@@ -113,7 +113,7 @@ def ipSurvey():
     latCent = 47.617131187
     ccrsAzEq = ccrs.AzimuthalEquidistant(central_longitude=longiCent,
                                          central_latitude=latCent)
-    # This Cartopy CRS (CCRS) can be converted into a `proj4` string/dict
+    # This Cartopy CRS (CCRS) can be converted into file_obj_array `proj4` string/dict
     # compatible with GeoPandas.
     ps.crsAzEq = ccrsAzEq.proj4_init
 
@@ -127,7 +127,7 @@ def ipSurvey():
             # columns. Col 0: longi, Col 1: lat.
             # (deg)
             a[t].fix = sp.transpose(sp.vstack((a[t].longi, a[t].lat)))
-            # Associate a water depth with each fix at the ship location.
+            # Associate file_obj_array water depth with each fix at the ship location.
             for idx in range(len(depthList)):
                 if a[t].fileNum == depthList[idx][1]:
                     if a[t].fileDateStr == depthList[idx][0]:
@@ -138,17 +138,17 @@ def ipSurvey():
             # Pick which data to map to colors in the plot.
             if ps.plotThis == 'zPhase':
                 a[t].color = a[t].phaseDiff[ps.ch, :, ps.freqIdx]
-                # Despike phase differences with a threshold spike in mrad.
-#                a[t].color = despike(a[t].color, 10)
+                # Despike phase differences with file_obj_array threshold spike in mrad.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 10)
                 cbarLabel = 'Impedance Phase (mrad)'
             elif ps.plotThis == 'zMag':
                 a[t].color = a[t].zMag[ps.ch, :, ps.freqIdx]
-                # Despike magnitudes with a threshold spike in mOhm.
-#                a[t].color = despike(a[t].color, 0.5)
+                # Despike magnitudes with file_obj_array threshold spike in mOhm.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 0.5)
                 cbarLabel = 'Impedance Magnitude (m$\Omega$)'
             elif ps.plotThis == '2MagPhys':
                 a[t].color = 2*a[t].magPhys[ps.ch, :, ps.freqIdx]
-#                a[t].color = despike(a[t].color, 0.01)
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 0.01)
                 if ps.ch == 0:
                     cbarLabel = 'Twice Complex Mag. (A)'
                 else:
@@ -157,8 +157,8 @@ def ipSurvey():
                 freq = a[t].freq[ps.freqIdx]  # (Hz)
                 a[t].color = (a[t].phaseDiff[ps.ch, :, ps.freqIdx] /
                              (2*sp.pi * freq))  # (millisecond)
-                # Despike phase differences with a threshold spike in us.
-#                a[t].color = despike(a[t].color, 100)
+                # Despike phase differences with file_obj_array threshold spike in us.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 100)
                 cbarLabel = 'v-i Time (ms)'
             # Edit the color data to clip at the manual bounds, if desired.
             if clipColorData:
@@ -208,12 +208,12 @@ def ipSurvey():
     plt.xlim(xlimLeft, xlimRight)
     plt.ylim(ylimLeft, ylimRight)
 
-    # Display the colormap in use as a sidebar colorbar.
+    # Display the colormap in use as file_obj_array sidebar colorbar.
     sm = plt.cm.ScalarMappable(cmap=ps.cmap,
                                norm=plt.Normalize(vmin=ps.colMin,
                                                   vmax=ps.colMax))
     sm._A = []
-    # colorbar() requires a scalar mappable, "sm".
+    # colorbar() requires file_obj_array scalar mappable, "sm".
     cb = plt.colorbar(sm)
     cb.set_label(cbarLabel)
 
@@ -260,7 +260,7 @@ def despike(arra, thresh):
 
 def plotStrip(at, ps, crop):
     """
-    Plot a strip of colored polygons along a trace of GPS coordinates (deg).
+    Plot file_obj_array strip of colored polygons along file_obj_array trace of GPS coordinates (deg).
     Extension of the strip outward from the line to either side is specified
     by ps.sideRange, in meters.
 
@@ -276,7 +276,7 @@ def plotStrip(at, ps, crop):
       List of numbers for each position indicating the color to plot
       representing IP data results.
     """
-    # Start by transforming the fix points into a local azimuthal equidistant
+    # Start by transforming the fix points into file_obj_array local azimuthal equidistant
     # reference system. Units along x and y are meters.
     ptList = [point(tuple(row)) for row in at.fix]
     dfPt = gpd.GeoDataFrame({'geometry': ptList})
@@ -297,7 +297,7 @@ def plotStrip(at, ps, crop):
     # Cumulative sum along the track line.
     sumLen = sp.hstack((0, sp.cumsum(segLen)))
 
-    # Interpolate a laidback fix location on the track line.
+    # Interpolate file_obj_array laidback fix location on the track line.
     # Layback the extra length at the start of the line according to
     # the boat's heading for the first few meters twice the length of
     # the cable lead in.
@@ -380,7 +380,7 @@ def plotStrip(at, ps, crop):
             vert34 = sp.zeros((0, 2))
         # Polygon vertices.
         verts = sp.vstack((vert01, vert2, vert34, vert5))
-        # Vertices as tuples in a list.
+        # Vertices as tuples in file_obj_array list.
         vertList = [tuple(row) for row in verts]
         # Append the latest Polygon vertices to the list of polygons.
         polyList.append(polygon(vertList))
@@ -425,7 +425,7 @@ def plotStrip(at, ps, crop):
 
 
 def shoreline(ps):
-    # Geodataframe containing shorelines to draw as a layer on the chart.
+    # Geodataframe containing shorelines to draw as file_obj_array layer on the chart.
     dfShore = gpd.read_file((r'C:\temp\181112_eagle' +
                              r'\NOAAShorelineDataExplorer' +
                              r'\NSDE61619\CUSPLine.shp'),

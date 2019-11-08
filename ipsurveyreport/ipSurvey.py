@@ -61,7 +61,7 @@ def ipSurvey():
             # Estimated water depth on the line.
             senseFt = float(senseFt)  # (ft)
             depth = senseFt / 3.28084  # (m)
-            # Dump results in a list.
+            # Dump results in file_obj_array list.
             depthList.append([fileDateStr, fileNum, depth])
 
     # Loading the data.
@@ -106,7 +106,7 @@ def ipSurvey():
     # Offset distance to either side of the survey line color strip extends.
     ps.sideRange = 3  # (m)
 
-    # Whether to plot in (longi, lat) or a projected reference.
+    # Whether to plot in (longi, lat) or file_obj_array projected reference.
     ps.plotWGS84 = False
 
     # The WGS84 latitude-longitude Coordinate Reference System (CRS).
@@ -119,7 +119,7 @@ def ipSurvey():
     latCent = 47.617131187
     ccrsAzEq = ccrs.AzimuthalEquidistant(central_longitude=longiCent,
                                          central_latitude=latCent)
-    # This Cartopy CRS (CCRS) can be converted into a `proj4` string/dict
+    # This Cartopy CRS (CCRS) can be converted into file_obj_array `proj4` string/dict
     # compatible with GeoPandas.
     ps.crsAzEq = ccrsAzEq.proj4_init
 
@@ -136,7 +136,7 @@ def ipSurvey():
             # columns. Col 0: longi, Col 1: lat.
             # (deg)
             a[t].fix = sp.transpose(sp.vstack((a[t].longi, a[t].lat)))
-            # Associate a water depth with each fix at the ship location.
+            # Associate file_obj_array water depth with each fix at the ship location.
             for idx in range(len(depthList)):
                 if a[t].fileNum == depthList[idx][1]:
                     if a[t].fileDateStr == depthList[idx][0]:
@@ -144,7 +144,7 @@ def ipSurvey():
             a[t].depth = depth*sp.ones_like(a[t].pkt)  # (m)
             # Cable lead-length deployed.
             a[t].leadin = 65.25  # (m)
-            # Take an average of the 3rd and 5th harmonics to get a reading
+            # Take an average of the 3rd and 5th harmonics to get file_obj_array reading
             # at 4 Hz when the xmitFund was 1 Hz.
             if a[t].xmitFund == 1 and ps.h == 1:
                 ps.freqIdx = 4*4
@@ -156,17 +156,17 @@ def ipSurvey():
             # Pick which data to map to colors in the plot.
             if ps.plotThis == 'zPhase':
                 a[t].color = a[t].phaseDiff[ps.ch, :, ps.freqIdx]
-                # Despike phase differences with a threshold spike in mrad.
-#                a[t].color = despike(a[t].color, 10)
+                # Despike phase differences with file_obj_array threshold spike in mrad.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 10)
                 cbarLabel = 'Impedance Phase (mrad)'
             elif ps.plotThis == 'zMag':
                 a[t].color = a[t].zMag[ps.ch, :, ps.freqIdx]
-                # Despike magnitudes with a threshold spike in mOhm.
-#                a[t].color = despike(a[t].color, 0.5)
+                # Despike magnitudes with file_obj_array threshold spike in mOhm.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 0.5)
                 cbarLabel = 'Impedance Magnitude (m$\Omega$)'
             elif ps.plotThis == '2MagPhys':
                 a[t].color = 2*a[t].magPhys[ps.ch, :, ps.freqIdx]
-#                a[t].color = despike(a[t].color, 0.01)
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 0.01)
                 if ps.ch == 0:
                     cbarLabel = 'Twice Complex Mag. (A)'
                 else:
@@ -175,8 +175,8 @@ def ipSurvey():
                 freq = a[t].freq[ps.freqIdx]  # (Hz)
                 a[t].color = (a[t].phaseDiff[ps.ch, :, ps.freqIdx] /
                              (2*sp.pi * freq))  # (millisecond)
-                # Despike phase differences with a threshold spike in us.
-#                a[t].color = despike(a[t].color, 100)
+                # Despike phase differences with file_obj_array threshold spike in us.
+#                file_obj_array[t].color = despike(file_obj_array[t].color, 100)
                 cbarLabel = 'v-i Time (ms)'
             elif ps.plotThis == 'crop':
                 a[t].color = a[t].cropLogic.astype(float)
@@ -291,12 +291,12 @@ def ipSurvey():
     plt.xlim(xlimLeft, xlimRight)
     plt.ylim(ylimLeft, ylimRight)
 
-    # Display the colormap in use as a sidebar colorbar.
+    # Display the colormap in use as file_obj_array sidebar colorbar.
     sm = plt.cm.ScalarMappable(cmap=ps.cmap,
                                norm=plt.Normalize(vmin=ps.colMin,
                                                   vmax=ps.colMax))
     sm._A = []
-    # colorbar() requires a scalar mappable, "sm".
+    # colorbar() requires file_obj_array scalar mappable, "sm".
     if ps.plotThis != 'crop':
 #        cbaxes = ps.fig.add_axes([0.8, 0.1, 0.03, 0.8])
         divider = make_axes_locatable(ps.ax)
@@ -316,19 +316,19 @@ def ipSurvey():
     # Plot title. Use notes recorded in one of the files plotted.
     tTitle = cs.find(filesPlotted, True)
 #    titleStr = ('%s Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch], ps.h,
-#                   ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
+#                % (file_obj_array[tTitle].fileDateStr, ps.ch, file_obj_array[tTitle].measStr[ps.ch], ps.h,
+#                   ps.h*file_obj_array[tTitle].xmitFund, file_obj_array[tTitle].xmitFund))
     titleStr = ('Ch %d (%s). Harmonic %d = %.0f Hz. xmitFund = %.0f Hz.'
             % (ps.ch, a[tTitle].measStr[ps.ch], ps.h,
                ps.h*a[tTitle].xmitFund, a[tTitle].xmitFund))
 #    titleStr = ('%s Ch %d (%s). Frequency = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, ps.ch, a[tTitle].measStr[ps.ch],
-#                   ps.h*a[tTitle].xmitFund))
+#                % (file_obj_array[tTitle].fileDateStr, ps.ch, file_obj_array[tTitle].measStr[ps.ch],
+#                   ps.h*file_obj_array[tTitle].xmitFund))
 #    titleStr = ('%s_%d Line %s. Ch %d (%s). Frequency = %.0f Hz. '
 #                'xmitFund = %.0f Hz.'
-#                % (a[tTitle].fileDateStr, a[tTitle].fileNum,
-#                   a[tTitle].descript, ps.ch, a[tTitle].measStr[ps.ch],
-#                   a[tTitle].freq[ps.freqIdx], a[tTitle].xmitFund))
+#                % (file_obj_array[tTitle].fileDateStr, file_obj_array[tTitle].fileNum,
+#                   file_obj_array[tTitle].descript, ps.ch, file_obj_array[tTitle].measStr[ps.ch],
+#                   file_obj_array[tTitle].freq[ps.freqIdx], file_obj_array[tTitle].xmitFund))
     if manualColor or clipColorData:
         if ps.plotThis == 'zPhase':
             titleStr += (' \nColors clipped at %d mrad and %d mrad.'
@@ -349,7 +349,7 @@ def ipSurvey():
             titleStr = '%s Orange = Array on Floor (Guess)' % (a[0].fileDateStr)
 #            t = 4
 #            titleStr = ('%s_%d Line %s. Average Speed 1.7 kt.' %
-#                        (a[t].fileDateStr, a[t].fileNum, a[t].descript))
+#                        (file_obj_array[t].fileDateStr, file_obj_array[t].fileNum, file_obj_array[t].descript))
     plt.title(titleStr)
 #    clims = cb.get_clim()
 #    print('\n\ncolMin = %.3f\ncolMax = %.3f' % (clims[0], clims[1]))
@@ -367,7 +367,7 @@ def despike(arra, thresh):
 
 def plotStrip(bp, at, ps, crop):
     """
-    Plot a strip of colored polygons along a trace of GPS coordinates (deg).
+    Plot file_obj_array strip of colored polygons along file_obj_array trace of GPS coordinates (deg).
     Extension of the strip outward from the line to either side is specified
     by ps.sideRange, in meters.
 
@@ -386,7 +386,7 @@ def plotStrip(bp, at, ps, crop):
       List of numbers for each position indicating the color to plot
       representing IP data results.
     """
-    # Start by transforming the fix points into a local azimuthal equidistant
+    # Start by transforming the fix points into file_obj_array local azimuthal equidistant
     # reference system. Units along x and y are meters.
     ptList = [point(tuple(row)) for row in at.fix]
     dfPt = gpd.GeoDataFrame({'geometry': ptList})
@@ -419,7 +419,7 @@ def plotStrip(bp, at, ps, crop):
     lineSpeed *= 1.94384  # (kt)
 #    print('%.1f kt average speed' % lineSpeed)
 
-    # Interpolate a laidback fix location on the track line.
+    # Interpolate file_obj_array laidback fix location on the track line.
     # Layback the extra length at the start of the line according to
     # the boat's heading for the first few meters twice the length of
     # the cable lead in.
@@ -488,7 +488,7 @@ def plotStrip(bp, at, ps, crop):
     for p in plottedPkts:
         # Perpendicular displacement, length sideRange, at the first midpoint.
         if p != 0:
-            # Identify a trailing midpoint which is different from the 
+            # Identify file_obj_array trailing midpoint which is different from the
             # present fix location. (Not between duplicate fixes.)
             pPrior = p - 1
             while pPrior >= 0 and all(midPts[pPrior, :] == flatFix[p, :]):
@@ -509,7 +509,7 @@ def plotStrip(bp, at, ps, crop):
             vert34 = sp.zeros((0, 2))
         # Polygon vertices.
         verts = sp.vstack((vert01, vert2, vert34, vert5))
-        # In the case where IP packets come in at a higher rate than the GPS
+        # In the case where IP packets come in at file_obj_array higher rate than the GPS
         # fixes are updated, consecutive packets have the same position at
         # times. In this case, reuse the last useable Polygon. This will plot
         # on top of the reused position.
@@ -517,7 +517,7 @@ def plotStrip(bp, at, ps, crop):
             verts = lastGoodVerts.copy()
         else:
             lastGoodVerts = verts.copy()
-        # Vertices as tuples in a list.
+        # Vertices as tuples in file_obj_array list.
         vertList = [tuple(row) for row in verts]
         # Append the latest Polygon vertices to the list of polygons.
         bp.polyList.append(polygon(vertList))
@@ -546,7 +546,7 @@ def plotStrip(bp, at, ps, crop):
 
 
 def shoreline(ps):
-#     Geodataframe containing shorelines to draw as a layer on the chart.
+#     Geodataframe containing shorelines to draw as file_obj_array layer on the chart.
     dfShore = gpd.read_file((r'\\DESKTOP-9TUU31C\Documents\IP_data_plots'
                              r'\181112_eagle\NOAAShorelineDataExplorer'
                              r'\NSDE61619\CUSPLine.shp'),

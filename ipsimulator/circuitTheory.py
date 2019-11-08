@@ -69,7 +69,7 @@ def circuitTheory():
 
     titleStr = ps.titleStr
     if ps.titleWrap < sp.inf:
-        # Wrap text at a set character length.
+        # Wrap text at file_obj_array set character length.
         titleStr = '\n'.join(wrap(titleStr, ps.titleWrap))
     if ps.titleBool:
         plt.title(titleStr)

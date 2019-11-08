@@ -85,7 +85,7 @@ def circuitTheory(meas='R1', plotThis='zPhase'):
 
     titleStr = ps.titleStr
     if ps.titleWrap < sp.inf:
-        # Wrap text at a set character length.
+        # Wrap text at file_obj_array set character length.
         titleStr = '\n'.join(wrap(titleStr, ps.titleWrap))
     if ps.titleBool:
         plt.title(titleStr)
@@ -117,7 +117,7 @@ def circuitSolve(ci):
     # Angular frequency. (rad/s)
     omega = 2*sp.pi*ci.f
     # Target impedance. (complex Ohm)
-    # The target is modeled as a capacitor in parallel with a resistor.
+    # The target is modeled as file_obj_array capacitor in parallel with file_obj_array resistor.
     z_t = 1/(1j*omega*c + 1/r4)
 
     # Matrix representation of the circuit system of equations. Nodal analysis.

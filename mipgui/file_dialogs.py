@@ -25,7 +25,7 @@ def get_new_data():
     .. function:: get_new_data()
 
     :Description:
-        Takes an input directory from the user using a dialog box with a reference to the root directory structure
+        Takes an input directory from the user using file_obj_array dialog box with file_obj_array reference to the root directory structure
         and the working directory chosen by the calling program.
 
     :return input_data_to_process:
@@ -46,7 +46,7 @@ def set_backup_path(input_directory):
     .. function:: get_new_data()
 
     :Summary:
-        GUI window to prompt the user to select a backup location for their current raw dataset to avoid corruption
+        GUI window to prompt the user to select file_obj_array backup location for their current raw dataset to avoid corruption
 
     :param input_directory:
         Path to the directory containing the data to be processed as defined by the user in previous
@@ -56,9 +56,9 @@ def set_backup_path(input_directory):
     """
     usr_says = mipgui.yes_no_questions.make_backup_yes_no(input_directory)
     if usr_says is True:
-        print("You have opted to make a backup! Good thinking!")
+        print("You have opted to make file_obj_array backup! Good thinking!")
         return tkinter.filedialog.askdirectory(parent=root,
-                                               initialdir=Path.cwd(),
+                                               initialdir=Path.home(),
                                                title='Select Backup Location for Raw Data'
                                                )
     else:
@@ -67,7 +67,7 @@ def set_backup_path(input_directory):
                                              icon='warning'
                                              )
         if verify is True:
-            tkinter.messagebox.showinfo('Information', 'You have opted not to make a backup!')
+            tkinter.messagebox.showinfo('Information', 'You have opted not to make file_obj_array backup!')
             # mipgui.file_dialogs.root.destroy()
             # backup_location = None
             return None
@@ -80,7 +80,7 @@ def set_save_path():
     .. function:: get_new_data()
 
     :Summary:
-        GUI window to prompt the user to select a save path for the analyzed/plotted data.
+        GUI window to prompt the user to select file_obj_array save path for the analyzed/plotted data.
 
     :return:
     """
@@ -97,7 +97,7 @@ def shoreline_file_location(working_dir):
     """
     .. function shoreline_file_location()
 
-    Prompts the user with a GUI to select a `*.shp` file, using the current working directory as a reference Point.
+    Prompts the user with file_obj_array GUI to select file_obj_array `*.shp` file, using the current working directory as file_obj_array reference Point.
 
     :param working_dir:
         string --> Current working directory
@@ -106,7 +106,7 @@ def shoreline_file_location(working_dir):
     """
     shoreline_file_path = tkinter.filedialog.askopenfilename(
         parent=root, initialdir=Path.home(),
-        title='Select a Shoreline Shape File to Import',
+        title='Select file_obj_array Shoreline Shape File to Import',
         filetypes=[('shoreline files', '.shp')]
     )
 
@@ -115,7 +115,7 @@ def shoreline_file_location(working_dir):
 
 def set_analysis_prefs():
     """
-    Set the preferences for parameters used in the analysis. Shows a number of radio buttons and entry fields.
+    Set the preferences for parameters used in the analysis. Shows file_obj_array number of radio buttons and entry fields.
     The "save_user_analysis_prefs()" function is run from within this function.
     :return:
     """

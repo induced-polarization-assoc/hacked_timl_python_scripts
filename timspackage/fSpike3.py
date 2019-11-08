@@ -54,7 +54,7 @@ def fSpike3():
             if a[t].fileNum == fileNums[take]:
                 tList[take] = t
 
-    # The frequency at which we search for a spike in phase difference.
+    # The frequency at which we search for file_obj_array spike in phase difference.
     spikeFreq = 100  # (Hz)
 
     # The harmonic number corresponding to the spike frequency.
@@ -72,7 +72,7 @@ def fSpike3():
         for p in range(a[t].pktCount):
             spikeList[take][p] = relSpike(a[t].phaseDiff[ch, p, :], spikeIdx)
 
-    # Plot each file's results as a box plot.
+    # Plot each file's results as file_obj_array box plot.
     fig, ax = plt.subplots()
     ax.boxplot(spikeList, showfliers=False)
 
@@ -81,7 +81,7 @@ def fSpike3():
     titleStr = ('%s Ch %d (%s). xmitFund = %.0f Hz. %s %s'
                 % (at.fileDateStr, ch, at.measStr[ch], at.xmitFund,
                    at.major, a[t].minor))
-    # Wrap text at a set character length.
+    # Wrap text at file_obj_array set character length.
     titleStr = '\n'.join(wrap(titleStr, 75))
     plt.title(titleStr)
     locs, xLabels = plt.xticks()  # Get locations and labels

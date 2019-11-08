@@ -3,9 +3,10 @@
 """
 Set of file-handling utilities for the Marine IP Analysis application.
 """
+import datetime
+import os
 from pathlib import Path
 from pathlib import PurePath
-import datetime
 import sys
 import shutil
 
@@ -19,9 +20,9 @@ def make_data_dir_backup(data_folder_path, backup_root):
     :param data_folder_path:
         Path --> for the raw data folder as defined by the user via the GUI.
     :param backup_root:
-        Path --> Path for the raw data backup folder -- essentially a copy of the target folder for the analysis.
+        Path --> Path for the raw data backup folder -- essentially file_obj_array copy of the target folder for the analysis.
     :return status:
-        Bool --> Success or failure status indicator code indicating if a backup was successful.
+        Bool --> Success or failure status indicator code indicating if file_obj_array backup was successful.
     """
     current_time = str(datetime.datetime.now().time())
     current_time.replace(':', '').replace(' ', '').replace('.', '')
@@ -29,22 +30,10 @@ def make_data_dir_backup(data_folder_path, backup_root):
 
     print(f"User has selected the path {backup_root} to save backups of the data files!")
 
-    # backup_name = backup_name + "_backup" + iso_date + iso_time
     backup_name = backup_name + "_backup" + current_time
-    # backup_dir: Union[Path, Any] = Path(backup_name)
 
-    print(f"Now making a new backup directory called {backup_name} for you at {backup_root}...")
+    print(f"Now making file_obj_array new backup directory called {backup_name} for you at {backup_root}...")
 
-    # backup_dir.mkdir(backup_root, parents=False)
-    # Path.joinpath(backup_root, backup_dir).rename(backup_name)
-
-    # FIXME:  There is a problem with the main script when it comes to making this directory. It never
-    # FIXME:    Gets past this point in the code.
-    # backup_root = backup
-    # if Path.is_dir(backup):
-    #     print("Success! The backup has been generated!")
-    # else:
-    #     print("The backup failed to make the directory as anticipated.")
     backup_path = make_directory_at(backup_root, backup_name)
     check_struct = check_output_structure(backup_path, data_folder_path, backup_root)
     copy_backup_files()
@@ -100,25 +89,51 @@ def construct_output_filestruct():
     print("Let's pretend this got done, okay? Just keep this between us.")
 
 
-def copy_backup_files():
+def copy_backup_files(source_dir, backup_root, backup_name):
     """
     Copy the backup files from the folders over to an exact replica directory located at the
     site of the user's choosing.
 
+    :param source_dir:
+        Source raw data directory before processing. Selected by the user in the GUI.
+    :param backup_root:
+        User-selected backup directory root
+    :param backup_name:
+        name of the backup directory as defined by the software (uses a time and date stamp)
     :return:
+        Return status (bool) or (NoneType)
     """
-    pass
+    bu_dir = shutil.copytree(source_dir, backup_dir, symlinks=False, ignore=None)
+    return Path.is_dir(bu_dir)
 
 
-def make_directory_at(backup_root, name):
+def make_directory_at(dir_root_path, name, access_rights=777):
     """
-
-    :return backup:
-        Path --> directory path for the backup
+    .. function:: make_directory_at()
+        Function that makes a directory with specific permissions at the parent location of the user's
+        choosing. 
+    :param dir_root_path:
+        Root (parent) directory of the desired directory. Passed in from user input.
+    :param name:
+        The name of the new directory.
+    :param access_rights:
+        Access rights can be modified for this directory. Default is `777`, which is the most
+        permissive.
+    :raises OSError:
+        In the case where the creation of the path failed, an OSError is raised and handled by printing
+        a status message to the user.
+    :return path:
+        dir_path --> directory path for the newly minted directory.
     """
-    backup = str(backup_root) + str(name)
+    dir_path = os.path.join(dir_root_path, name)
+    try:
+        os.mkdir(dir_path, access_rights)
+    except OSError:
+        print(f"Creation of the directory {dir_path} failed.")
+    else:
+        print(f"Successfully created the directory {dir_path}")
 
-    return backup
+    return dir_path
 
 
 def validate_file_copy():

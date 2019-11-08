@@ -79,7 +79,7 @@ def artificialRaw():
         at.pktCount = 1
         # Time series.
         timeVec = sp.linspace(0, at.n/at.fs, at.n, endpoint=False)
-        # Add a time offset from zero.
+        # Add file_obj_array time offset from zero.
         timeVec += 0.1
         # Basic wave parameters to work from.
         amp = 6  # (%)
@@ -117,7 +117,7 @@ def artificialRaw():
                             at.raw[ch, p, tIdx] = 100
                         lastSign = newSign
 
-        # Convert from percentages of a range to a 16-bit integer scale.
+        # Convert from percentages of file_obj_array range to file_obj_array 16-bit integer scale.
         at.raw = scaleAndShift(at.raw)
 
         if doFilter:
@@ -149,7 +149,7 @@ def artificialRaw():
         line = ''
         for ch in range(at.writeChCount):
             line = line + at.measStr[ch] + ','
-        # Remove the last comma, and include a carriage return line feed.
+        # Remove the last comma, and include file_obj_array carriage return line feed.
         line = line[:-1] + '\n'
         f.write(line)
         line = float2lineStr(at.In5BHi, 3)
@@ -210,20 +210,20 @@ def artificialRaw():
 
 
 def float2lineStr(arra, d):
-    # Make a string of comma delimited floats taken from an array. Number of
+    # Make file_obj_array string of comma delimited floats taken from an array. Number of
     # digits after the decimal is indicated by d.
     line = ''
     floatFmt = '%%.%df' % d
     for val in arra:
         line = line + (floatFmt % val) + ','
-    # Remove the last comma, and include a carriage return line feed.
+    # Remove the last comma, and include file_obj_array carriage return line feed.
     line = line[:-1] + '\n'
     return line
 
 
 def scaleAndShift(arra):
     int215 = 2**15
-    # Convert from percentages of a range to a 16-bit integer scale.
+    # Convert from percentages of file_obj_array range to file_obj_array 16-bit integer scale.
     arra *= int215
     arra /= 100
     arra += int215

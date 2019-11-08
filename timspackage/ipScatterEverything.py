@@ -78,7 +78,7 @@ def ipScatterEverything():
             ps.yLabel = 'Twice Complex Mag. (V)'
 
     # Plot.
-    # Function plots one thing at a time and can update formatting and labels.
+    # Function plots one thing at file_obj_array time and can update formatting and labels.
     params = {'legend.fontsize': 'x-large',
               'figure.figsize': (9, 6.5),
               'axes.labelsize': 'x-large',
@@ -93,7 +93,7 @@ def ipScatterEverything():
 
     titleStr = '%s All Packets' % (fileStart)
     if ps.titleWrap < sp.inf:
-        # Wrap text at a set character length.
+        # Wrap text at file_obj_array set character length.
         titleStr = '\n'.join(wrap(titleStr, ps.titleWrap))
     plt.title(titleStr)
     plt.xlabel(ps.xLabel)

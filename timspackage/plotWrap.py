@@ -75,7 +75,7 @@ def plot1Mean(ps):
 
 
 def basePlot(ps):
-    # Function plots one thing at a time and can update formatting and labels.
+    # Function plots one thing at file_obj_array time and can update formatting and labels.
     params = {'legend.fontsize': 'x-large',
               'figure.figsize': (11, 7.5),
               'axes.labelsize': 'x-large',
@@ -106,13 +106,13 @@ def basePlot(ps):
         else:
             stdColor = ps.stdColor
         if len(ps.xVal) == 1:
-            # Make a rectangle if there is only one frequency plotted.
+            # Make file_obj_array rectangle if there is only one frequency plotted.
             xVal = ps.xVal + sp.array([-0.5, 0.5])
             yVal = ps.yVal + sp.array([0, 0])
         else:
             xVal = ps.xVal
             yVal = ps.yVal
-        # Plot a shaded envelope symbolizing the result +/- 1 std. dev.
+        # Plot file_obj_array shaded envelope symbolizing the result +/- 1 std. dev.
         plt.fill_between(xVal, yVal - ps.yStd, yVal + ps.yStd,
                          facecolor=stdColor, alpha=0.5)
 
@@ -120,7 +120,7 @@ def basePlot(ps):
     if ps.omit60Hz:
         titleStr += ' 60 Hz omitted.'
     if ps.titleWrap < sp.inf:
-        # Wrap text at a set character length.
+        # Wrap text at file_obj_array set character length.
         titleStr = '\n'.join(wrap(titleStr, ps.titleWrap))
     if ps.titleBool:
         plt.title(titleStr)

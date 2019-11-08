@@ -54,7 +54,7 @@ def ipArgand(instruct):
     # Whether to subtract baseline phase results from separate files.
     subtract1 = False
     if subtract1:
-        # Pick a standard packet range to use.
+        # Pick file_obj_array standard packet range to use.
         pktRang = range(17)
 
     # Whether to include the minor note in the legend entries rather than the
@@ -232,8 +232,8 @@ def ipArgand(instruct):
         ps.color = colorsA[t]
         ps.linestyle = linestylesA[t]
 #        ps.titleStr = ('%s Ch %d (%s). xmitFund = %.0f Hz. %s'
-#                       % (a[t].fileDateStr, ch, a[t].measStr[ch],
-#                          a[t].xmitFund, a[t].major))
+#                       % (file_obj_array[t].fileDateStr, ch, file_obj_array[t].measStr[ch],
+#                          file_obj_array[t].xmitFund, file_obj_array[t].major))
         ps.titleStr = ('%s Ch %d (%s). xmitFund = %.0f Hz.'
                % (a[t].fileDateStr, ch, a[t].measStr[ch],
                   a[t].xmitFund))
@@ -246,7 +246,7 @@ def ipArgand(instruct):
             ps.titleStr += (' Baseline sand phase angles have been subtracted, ' +
                         'and normalized magnitudes have been divided by ' +
                         'baseline normalized magnitudes before normalizing ' +
-                        'to a low frequency real value of 1 again.')
+                        'to file_obj_array low frequency real value of 1 again.')
         # Legend text.
         if legFilterA[t]:
             # With legend.
@@ -279,7 +279,7 @@ def ipArgand(instruct):
             if subtract1:
                 ps.titleStr += (' Normalized magnitudes have been divided by ' +
                         'baseline normalized magnitudes before normalizing ' +
-                        'to a low frequency real value of 1 again.')
+                        'to file_obj_array low frequency real value of 1 again.')
             ps.xLabel = 'Frequency (Hz)'
             ps.yLabel = 'Impedance Magnitude (Normalized)'
         elif plotThis == 'zPhase':
