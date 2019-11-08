@@ -33,7 +33,8 @@ def main():
     session = init_session()
     procopts = set_up_processing_options()
     analysisopts = choose_analysis_options()
-    return session, procopts
+    # TODO:  Add charting and plotting options here!!!
+    return session, procopts, analysisopts
 
 
 def init_session():
@@ -58,35 +59,35 @@ def init_session():
     else:
         session.raw_data_path = None
         print("Nothing to do here, then. Moving on to analysis...")
-        session.pickle_path = mipgui.file_dialogs.open_existing_pickle()
+        session.pickle_path = mipgui.file_dialogs.choose_existing_pickle()
 
     # SET THE ANALYSIS PREFERENCES FOR THE SESSION
     session.output_path = mipgui.yes_no_questions.save_yes_no()
-    mipgui.file_dialogs.set_analysis_prefs()
 
     return session
 
 
 def set_up_processing_options():
     """
-
+    TODO:  GET THIS FILLED IN SO WE CAN SET UP THE PROCESSING SCRIPT APPROPRIATELY
     :returnprocopts:
 
     """
     procopts = ProcOpts()
-    procopts.
     return procopts
 
 
 def choose_analysis_options():
     """
-
+    TODO:  GET THIS FILLED IN SO WE CAN SET UP THE PROCESSING SCRIPT APPROPRIATELY
     :return analysisopts:
 
     """
+    mipgui.file_dialogs.set_analysis_prefs()
     analysisopts = AnalysisOptions()
     return analysisopts
 
 
 if __name__ == "__main__":
     process, pickle, output = main()
+

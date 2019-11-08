@@ -41,6 +41,30 @@ def get_new_data():
     return input_data_to_process
 
 
+def choose_existing_pickle():
+    """
+
+    :return:
+    """
+    pass
+
+
+def select_files_for_processing():
+    """
+
+    :return:
+    """
+    pass
+
+
+def set_pickle_path():
+    """
+
+    :return:
+    """
+    pass
+
+
 def set_backup_path(input_directory):
     """
     .. function:: get_new_data()
@@ -115,6 +139,7 @@ def shoreline_file_location(working_dir):
 
 def set_analysis_prefs():
     """
+    TODO:  SEE IF THIS IS REDUNDANT -- IF YOU DON'T NEED IT, SCRAP IT!
     Set the preferences for parameters used in the analysis. Shows file_obj_array number of radio buttons and entry fields.
     The "save_user_analysis_prefs()" function is run from within this function.
     :return:

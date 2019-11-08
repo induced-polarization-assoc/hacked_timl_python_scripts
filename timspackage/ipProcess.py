@@ -20,9 +20,8 @@ import mipgui.file_dialogs
 import timspackage.FileClass as fileClass
 
 
-
 # def ipProcess(save_this, freq_span=200, save_phase=True, select_files=True):
-def ipProcess(this_session):
+def ipProcess():
     """
     Reads text files in file_obj_array data folder and saves frequency domain results to file_obj_array
     pickled file to be opened later for plotting.
