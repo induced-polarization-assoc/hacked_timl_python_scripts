@@ -7,7 +7,7 @@ voltage, depth, conductivity, chronometric, and navigational data.
 import unittest
 
 
-class MyTestCase(unittest.TestCase):
+class TestFileHandling(unittest.TestCase):
     """
     MyTestCase docstring and calculation/assertion details in plain language.
     """

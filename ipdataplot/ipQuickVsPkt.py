@@ -45,7 +45,7 @@ def plot1VsPkt(at, ps):
 
     Parameters
     ----------
-    at  : FileClass object.
+    at  : fileclass object.
     ps : class containing plotting choices
       See construction in ipPlot()
     '''

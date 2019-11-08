@@ -6,3 +6,5 @@
 Utility functions for logging data and saving processed data.
 
 """
+import timspackage.session as Session()
+import timspackage.

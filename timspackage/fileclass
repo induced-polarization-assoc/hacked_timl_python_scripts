@@ -1,32 +1,178 @@
 #!/bin/env python
 #  Copyright (c) 2019. Induced Polarization Associates, LLC, Seattle, WA
-__author__ = 'Joseph J. Radler'
+__author__ = ['Joseph J. Radler', 'Tim Lewis']
+import numpy as np
+import scipy as sp
+from scipy import fftpack as spfftpack
+from datetime import datetime
+from pathlib import Path as Path
+import timspackage.commonSense as cs
+from timspackage.commonSense import emptyClass
 
 
 class FileClass:
     """
-    Docstring for FileClass?
+    .. class:: fileclass
+
+    .. summary::
+    Object that represents a parsed `data.txt` file with all the appropriate attributes populated
+    by the parsed data.
+
+    .. parameters::
+        path
+        to_save
+        fileName
+
+    .. attributes::
+        self.count_lines(fh)
+        self.raw[:, p, s]
+        self.n
+        self.pkt[p]
+        self.cpuDTStr[p].d,
+        self.cpuDTStr[p].t
+        self.cpuDT[p]
+        self.lat[p],
+        self.longi[p]
+        self.clipLo[:, p]
+        self.clipHi[:, p]
+        self.meanUpPct[:, p]
+        self.meanDnPct[:, p]
+        self.countDn[:, p]
+        self.fileDateStr
+        self.fileNum
+        self.descript # Description of the test.
+        self.minor # Minor note.
+        self.major   # Major note.
+        self.scanChCount,  # number of channels in each A/D scan.
+        self.chCount,  # number of channels written to the file.
+        self.n,  # Number of samples in the FFT time series.
+        self.fs,  # (Hz) FFT sampling frequency.
+        self.xmitFund  # (Hz) Transmit Square
+        self.pktCount = int((line_count - 10)/(11 + self.n))
+        self.init_array_dims()
+        self.rCurrentMeas,  # (Ohm) resistance.
+        self.rExtraSeries
+        self.measStr
+        self.In5BHi = sp.fromstring(line, dtype=float, sep=',')
+        self.Out5BHi = sp.fromstring(line, dtype=float, sep=',')
+        self.ALoadQHi = sp.fromstring(line, dtype=float, sep=',')
+
+    .. methods::
+        introduce(self, fileName)
+        read_txt(self, path, to_save)
+        init_array_dims(self)
+        string_to_datetime(self, DTStr)
+        compute_phys(self, channel)
+        pct_to_phys(self, pct, channel)
+        count_lines(self, fh)
+        post_read(self, saveThis)
     """
-
-    def introduce(self, fileName):
+    def __init__(self, name, path, to_save, auto_postprocess=True):
         """
+        .. method:: __init__()
+        File object constructor method that initializes all values with default values or placeholders
+        in anticipation of loading the values from file with FileClass methods.
+        :param name:
+        :param path:
+        :param to_save:
+        :param auto_postprocess:
+            Defaults to true.
 
-        :param fileName:
+        """
+        # File location attributes
+        self.corrChSkewBool = True
+        self.file_name = name
+        self.file_path = path
+        self.save_this = to_save
+
+        # File Header Metadata Defaults
+        self.fileDateStr = ''
+        self.fileNum = 0
+        self.descript = 'description'  # Description of the test.
+        self.minor = 'minor note'  # Minor note.
+        self.major = 'major note'  # Major note.
+        self.scanChCount = 8  # number of channels in each A/D scan.
+        self.chCount = 8  # number of channels written to the file.
+        self.n = 1  # Number of samples in the FFT time series.
+        self.fs = 0.0  # (Hz) FFT sampling frequency.
+        self.xmitFund = 0.0  # (Hz) Transmit Square
+        self.pktCount = 1
+        self.rCurrentMeas = 0  # (Ohm) resistance.
+        self.rExtraSeries = 0  # Ohm
+        self.measStr = 'measure string'
+        self.raw = np.array([[], [], []])
+        self.n = 1
+        self.In5BHi = None
+        self.Out5BHi = None
+        self.ALoadQHi = None
+
+        # Initialize the arrays as zero-filled arrays
+        self.shape2D = (self.chCount, self.pktCount)
+        # 0-indexed by packet number.
+        self.pkt = sp.zeros(self.pktCount, dtype=int)
+        # self.cpuDTStr = [cs.emptyClass()] * self.pktCount
+        self.cpuDTStr = [emptyClass()] * self.pktCount
+        self.cpuDT = [0] * self.pktCount
+        # self.gpsDTStr = [cs.emptyClass()] * self.pktCount
+        self.gpsDTStr = [emptyClass()] * self.pktCount
+        self.gpsDT = [0] * self.pktCount
+        self.lat = sp.zeros(self.pktCount, dtype=float)
+        self.longi = sp.zeros(self.pktCount, dtype=float)
+        # 0-indexed by channel number.
+        # 0-indexed by packet number.
+        self.clipHi = sp.zeros(self.shape2D, dtype=int)
+        self.clipLo = sp.zeros(self.shape2D, dtype=int)
+        self.meanPct = sp.zeros(self.shape2D, dtype=float)
+        self.meanUpPct = sp.zeros(self.shape2D, dtype=float)
+        self.meanDnPct = sp.zeros(self.shape2D, dtype=float)
+        self.meanPhys = sp.zeros(self.shape2D, dtype=float)
+        self.meanUpPhys = sp.zeros(self.shape2D, dtype=float)
+        self.meanDnPhys = sp.zeros(self.shape2D, dtype=float)
+        self.countUp = sp.zeros(self.shape2D, dtype=int)
+        self.countDn = sp.zeros(self.shape2D, dtype=int)
+        # 0-indexed by channel number.
+        # 0-indexed by packet number.
+        # 0-indexed by sample number.
+        self.raw = sp.zeros((self.chCount, self.pktCount, self.n), dtype=float)
+
+        # Initialize processing attributes associated with the file.
+        self.freq = None
+        self.fft = None
+        self.phaseUnCorr = None
+        self.mag16Bit = None
+        self.magPhys = None
+        self.phase = None
+        self.phaseDiff = None
+        self.zMag = None
+
+        # Initialize this random little emptyClass thing
+        emptyClass.d = None
+        emptyClass.t = None
+
+        # Automatically run the read_txt to populate the arrays
+        self.read_txt()
+
+        if auto_postprocess is True:
+            # After the file has been read, perform some calculations.
+            self.post_read()
+
+    def introduce(self):
+        """
+        .. method:: introduce
         :return:
         """
-        print('Creating %s from %s.' % (self, fileName))
+        print('Creating %s from %s at %s.' % (self, self.file_name, self.file_path))
 
-    def read_txt(self, file_path, save_this):
+    def read_txt(self):
         """
-
-        :param file_path:
-        :param save_this:
-        :return:
+        .. method read_txt()
+            Takes in the file path as defined by the user that contains the raw text to be parsed and loaded
+            into the file object.
         """
         # Read IP measurements from file_obj_array text file.
-        with open(file_path, 'r') as fh:
+        with open(self.file_path, 'r') as fh:
             # Number of lines in the file.
-            line_count = self.countLines(fh)
+            line_count = self.count_lines(fh)
             # Rewind the pointer in the file back to the beginning.
             fh.seek(0)
             # Initialize the packet counter.
@@ -59,7 +205,7 @@ class FileClass:
                         (self.cpuDTStr[p].d,
                          self.cpuDTStr[p].t) = line[1:].split(',')
                         # Translate to datetime object.
-                        self.cpuDT[p] = self.str2DateTime(self.cpuDTStr[p])
+                        self.cpuDT[p] = self.string_to_datetime(self.cpuDTStr[p])
                     elif line[0] == '@':
                         # GPS UTC Date and Time Strings,
                         # and latitude and longitude fixes.
@@ -68,7 +214,7 @@ class FileClass:
                          self.lat[p],
                          self.longi[p]) = line[1:].split(',')
                         # Translate to datetime object.
-                        self.gpsDT[p] = self.str2DateTime(self.gpsDTStr[p])
+                        self.gpsDT[p] = self.string_to_datetime(self.gpsDTStr[p])
                         # Type casting.
                         self.lat[p] = float(self.lat[p])
                         self.longi[p] = float(self.longi[p])
@@ -135,7 +281,7 @@ class FileClass:
                     # followed by packets. Packets contain (11 + n) lines each.
                     self.pktCount = int((line_count - 10)/(11 + self.n))
                     # Dimension arrays indexed by packet.
-                    self.dimArrays()
+                    self.init_array_dims()
                 elif lidx == 6:
                     (self.rCurrentMeas,  # (Ohm) resistance.
                      self.rExtraSeries) = line.split(',')  # (Ohm).
@@ -159,12 +305,16 @@ class FileClass:
                     # MccDaq board AIn() maximum of the input range (V).
                     # 0-indexed by channel number.
                     self.ALoadQHi = sp.fromstring(line, dtype=float, sep=',')
-        # After the file has been read, perform some calculations.
-        self.postRead(save_this)
+        # # After the file has been read, perform some calculations.
+        # self.post_read()
 
-    def dimArrays(self):
-        # Initialize numpy arrays and python lists as zeros.
-        shape2D = (self.chCount, self.pktCount)
+    def init_array_dims(self):
+        """
+        Initialize numpy arrays and python lists as zeros
+        :return:
+        """
+        shape2_d = self.shape2D
+        # self.shape2_d = (self.chCount, self.pktCount)
         # 0-indexed by packet number.
         self.pkt = sp.zeros(self.pktCount, dtype=int)
         self.cpuDTStr = [cs.emptyClass()]*self.pktCount
@@ -175,76 +325,107 @@ class FileClass:
         self.longi = sp.zeros(self.pktCount, dtype=float)
         # 0-indexed by channel number.
         # 0-indexed by packet number.
-        self.clipHi = sp.zeros(shape2D, dtype=int)
-        self.clipLo = sp.zeros(shape2D, dtype=int)
-        self.meanPct = sp.zeros(shape2D, dtype=float)
-        self.meanUpPct = sp.zeros(shape2D, dtype=float)
-        self.meanDnPct = sp.zeros(shape2D, dtype=float)
-        self.meanPhys = sp.zeros(shape2D, dtype=float)
-        self.meanUpPhys = sp.zeros(shape2D, dtype=float)
-        self.meanDnPhys = sp.zeros(shape2D, dtype=float)
-        self.countUp = sp.zeros(shape2D, dtype=int)
-        self.countDn = sp.zeros(shape2D, dtype=int)
+        self.clipHi = sp.zeros(shape2_d, dtype=int)
+        self.clipLo = sp.zeros(shape2_d, dtype=int)
+        self.meanPct = sp.zeros(shape2_d, dtype=float)
+        self.meanUpPct = sp.zeros(shape2_d, dtype=float)
+        self.meanDnPct = sp.zeros(shape2_d, dtype=float)
+        self.meanPhys = sp.zeros(shape2_d, dtype=float)
+        self.meanUpPhys = sp.zeros(shape2_d, dtype=float)
+        self.meanDnPhys = sp.zeros(shape2_d, dtype=float)
+        self.countUp = sp.zeros(shape2_d, dtype=int)
+        self.countDn = sp.zeros(shape2_d, dtype=int)
         # 0-indexed by channel number.
         # 0-indexed by packet number.
         # 0-indexed by sample number.
         self.raw = sp.zeros((self.chCount, self.pktCount, self.n), dtype=float)
 
-    def str2DateTime(self, dTStr):
-        YY = 2000 + int(dTStr.d[0: 0+2])
-        MO = int(dTStr.d[2: 2+2])
-        DD = int(dTStr.d[4: 4+2])
-        HH = int(dTStr.t[0: 0+2])
-        MM = int(dTStr.t[2: 2+2])
-        SS = int(dTStr.t[4: 4+2])
-        micro = 1000 * int(dTStr.t[7: 7+3])
+    @staticmethod
+    def string_to_datetime(date_time_string):
+        """
+        .. function:: string_to_datetime
+        Converts a string to a date-time format to load into the fileclass object datetime attributes.
+        :param date_time_string:
+        :return:
+        """
+        YY = 2000 + int(date_time_string.d[0: 0 + 2])
+        MO = int(date_time_string.d[2: 2 + 2])
+        DD = int(date_time_string.d[4: 4 + 2])
+        HH = int(date_time_string.t[0: 0 + 2])
+        MM = int(date_time_string.t[2: 2 + 2])
+        SS = int(date_time_string.t[4: 4 + 2])
+        micro = 1000 * int(date_time_string.t[7: 7 + 3])
         if YY == 2000:
             return datetime.min
         else:
             return datetime(YY, MO, DD, HH, MM, SS, micro)
 
-    def computePhys(self, currentCh):
-        self.meanPhys = self.pct2Phys(self.meanPct, currentCh)
-        self.meanUpPhys = self.pct2Phys(self.meanUpPct, currentCh)
-        self.meanDnPhys = self.pct2Phys(self.meanDnPct, currentCh)
+    def compute_phys(self, channel):
+        """
+        .. function:: compute_phys
+        Computes the physical values from relative voltage percentages read by the ADC
+        :param channel:
+        :return:
+        """
+        self.meanPhys = self.pct_to_phys(self.meanPct, channel)
+        self.meanUpPhys = self.pct_to_phys(self.meanUpPct, channel)
+        self.meanDnPhys = self.pct_to_phys(self.meanDnPct, channel)
 
-    def pct2Phys(self, pct, currentCh):
+    def pct_to_phys(self, pct, channel):
+        """
+        .. function:: pct_to_phys
+            Converts percentage values to physically meaningful voltage values.
+        :param pct:
+        :param channel:
+        :return:
+        """
         phys = sp.zeros_like(pct, dtype=float)
         for ch in range(self.chCount):
             phys[ch, :] = (pct[ch, :] / 100 *
                            self.ALoadQHi[ch] * self.In5BHi[ch] /
                            self.Out5BHi[ch])  # (V)
         # Convert the voltage on the current measurement channel to file_obj_array current.
-        phys[currentCh, :] /= self.rCurrentMeas  # (A)
+        phys[channel, :] /= self.rCurrentMeas  # (A)
         return phys
 
-    def countLines(self, fh):
-        # Counter lidx starts counting at 1 for the first line.
+    @staticmethod
+    def count_lines(fh):
+        """
+        .. function count_lines
+        Counter lidx starts counting at 1 for the first line.
+        :param fh:
+        :return lidx:
+        """
         for lidx, line in enumerate(fh, 1):
             pass
         return lidx
 
-    def postRead(self, saveThis):
-        # Whether to correct for channel skew.
-        corrChSkewBool = True
+    def post_read(self):
+        """
+        Whether to correct for channel skew.
 
-        # Channel on which the current is measured. This channel's phase is
-        # subtracted from the other channels in phase difference calculation.
-        # This channel's voltage is divided by the current measurement
-        # resistance to obtain file_obj_array physical magnitude in Ampere units.
-        # Other channels voltages are divided by this channel's current to find
-        # impedance magnitude.
-
-        currentCh = 0
+        Channel on which the current is measured. This channel's phase is
+        subtracted from the other channels in phase difference calculation.
+        This channel's voltage is divided by the current measurement
+        resistance to obtain file_obj_array physical magnitude in Ampere units.
+        Other channels voltages are divided by this channel's current to find
+        impedance magnitude.
+        :return:
+        """
+        # FIXME:  THESE LINES BELOW SHOULD BE CONVERTED INTO DISCRETE METHODS OR FUNCTIONS OF ANOTHER CLASS
+        # WHERE THESE MATHEMATICAL UTILITIES CAN BE RUN IN ISOLATION INSTEAD OF AS PART OF A SCRIPT.
+        # THIS WILL ALSO MAKE THINGS EASIER TO COMPREHEND AND HACK ON AS WE'RE MODIFYING THE STUFF TO
+        # INTERFACE WITH TODD'S RDBMS
+        current_ch = 0
 
         # Flip voltage channels upside-down if requested.
-        if saveThis == 'upsideDown':
+        if self.save_this == 'upsideDown':
             for ch in range(self.chCount):
-                if ch != currentCh:
+                if ch != current_ch:
                     self.raw[ch, ...] *= -1
                     self.raw[ch, ...] += 2**16 - 1
 
-        self.computePhys(currentCh)
+        self.compute_phys(current_ch)
         # Compute FFTs.
         self.freq = spfftpack.fftfreq(self.n, 1 / self.fs, )  # (Hz)
         self.fft = spfftpack.fft(self.raw) / self.n
@@ -263,13 +444,13 @@ class FileClass:
 
         # Correct phase for channel skew.
         self.phase = self.phaseUnCorr
-        if corrChSkewBool:
+        if self.corrChSkewBool:
             for ch in range(self.chCount):
-                deltaT = ch / (self.fs * self.scanChCount)  # (s)
-                corrSlope = 2*sp.pi*deltaT  # (rad/Hz)
+                delta_t = ch / (self.fs * self.scanChCount)  # (s)
+                corr_slope = 2*sp.pi*delta_t  # (rad/Hz)
                 for p in range(self.pktCount):
                     self.phase[ch, p, :] = sp.subtract(self.phase[ch, p, :],
-                                                       self.freq * corrSlope)
+                                                       self.freq * corr_slope)
 
         # Compute phase differences.
         # Be careful about angles looping through +/- pi.
@@ -277,7 +458,7 @@ class FileClass:
         self.phaseDiff = sp.zeros_like(self.phase, dtype=float)
         for ch in range(self.chCount):
             self.phaseDiff[ch, :, :] = sp.subtract(self.phase[ch, :, :],
-                                                   self.phase[currentCh, :, :])
+                                                   self.phase[current_ch, :, :])
         self.phaseDiff[self.phaseDiff < -sp.pi] += 2*sp.pi
         self.phaseDiff[self.phaseDiff > sp.pi] -= 2*sp.pi
 
@@ -289,6 +470,13 @@ class FileClass:
         for ch in range(self.chCount):
             # (Ohm)
             self.zMag[ch, :, :] = sp.divide(self.magPhys[ch, :, :],
-                                            self.magPhys[currentCh, :, :])
+                                            self.magPhys[current_ch, :, :])
         # Convert to milliOhm.
         self.zMag *= 1000
+
+
+if __name__ == "__main__":
+    file_name = 'testfile1.txt'
+    file_path = Path.home()
+    save_this = 'raw'
+    somefile = FileClass(file_name, file_path, save_this)

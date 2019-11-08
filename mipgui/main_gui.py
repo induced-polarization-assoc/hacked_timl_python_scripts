@@ -43,10 +43,10 @@ def init_session():
     dir_to_process = mipgui.yes_no_questions.new_data_yesno()
     if dir_to_process is not None:
         print(f"The directory containing files to process is {dir_to_process}")
-        backup_location = mipgui.file_dialogs.set_backup_path(dir_to_process)
-        if backup_location is not None:
-            # make the backups automagically.
-            marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
+        # backup_location = mipgui.file_dialogs.set_backup_path(dir_to_process)
+        # if backup_location is not None:
+        #     # make the backups automagically.
+        #     marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
     # else:
         dir_to_process = None
     #     print("Nothing to do here, then. Moving on to analysis...")

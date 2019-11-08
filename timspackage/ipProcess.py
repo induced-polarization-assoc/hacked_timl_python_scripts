@@ -11,16 +11,16 @@ Heavily modified on Thursday, November 7th, 2019
 """
 import os
 import scipy as sp
-from ipdataproc import common_sense as cs
-from scipy import fftpack as spfftpack
-from datetime import datetime
+from timspackage import commonSense as cs
+# from scipy import fftpack as spfftpack
+# from datetime import datetime
 import pickle
 
 import mipgui.file_dialogs
-import timspackage.fileclass as fileClass
+import timspackage.FileClass as fileClass
 
 
-def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
+def ipProcess(save_this, freq_span, save_phase=True, select_files=False):
     """
     Reads text files in file_obj_array data folder and saves frequency domain results to file_obj_array
     pickled file to be opened later for plotting.
@@ -29,19 +29,19 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
     # 'raw': raw voltage waveforms from one packet in each file.
     # 'zAnyF': impedance phase and mag at non-zero fft frequencies,
     #          not skipping.
-    # save_this = 'raw'
+    # to_save = 'raw'
     saveThis = save_this
     # Number nonzero frequencies saved to the .pkl file with the zero frequency
     # freqCount = 200
     freqCount = freq_span
 
     # Whether to save absolute phase results.
-    #savePhase = False
+    savePhase = False
 
     # Whether to select file_obj_array specific file for processing, as opposed to all of
     # them.
     selected_files = select_files
-    #selectedFileNum = 5
+    selectedFileNum = 5
 
 
     # FIXME:  Get it so the user input from the GUI can be used here.
@@ -144,16 +144,16 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
         pickle.dump(file_obj_array, f)
 
 
-# class FileClass:
+# class fileclass:
 #
 #     def introduce(self, fileName):
 #         print('Creating %s from %s.' % (self, fileName))
 #
-#     def read_txt(self, file_path, save_this):
+#     def read_txt(self, path, to_save):
 #         # Read IP measurements from file_obj_array text file.
-#         with open(file_path, 'r') as fh:
+#         with open(path, 'r') as fh:
 #             # Number of lines in the file.
-#             lineCount = self.countLines(fh)
+#             lineCount = self.count_lines(fh)
 #             # Rewind the pointer in the file back to the beginning.
 #             fh.seek(0)
 #             # Initialize the packet counter.
@@ -186,7 +186,7 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #                         (self.cpuDTStr[p].d,
 #                          self.cpuDTStr[p].t) = line[1:].split(',')
 #                         # Translate to datetime object.
-#                         self.cpuDT[p] = self.str2DateTime(self.cpuDTStr[p])
+#                         self.cpuDT[p] = self.string_to_datetime(self.cpuDTStr[p])
 #                     elif line[0] == '@':
 #                         # GPS UTC Date and Time Strings,
 #                         # and latitude and longitude fixes.
@@ -195,7 +195,7 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #                          self.lat[p],
 #                          self.longi[p]) = line[1:].split(',')
 #                         # Translate to datetime object.
-#                         self.gpsDT[p] = self.str2DateTime(self.gpsDTStr[p])
+#                         self.gpsDT[p] = self.string_to_datetime(self.gpsDTStr[p])
 #                         # Type casting.
 #                         self.lat[p] = float(self.lat[p])
 #                         self.longi[p] = float(self.longi[p])
@@ -262,7 +262,7 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #                     # followed by packets. Packets contain (11 + n) lines each.
 #                     self.pktCount = int((lineCount - 10)/(11 + self.n))
 #                     # Dimension arrays indexed by packet.
-#                     self.dimArrays()
+#                     self.init_array_dims()
 #                 elif lidx == 6:
 #                     (self.rCurrentMeas,  # (Ohm) resistance.
 #                      self.rExtraSeries) = line.split(',')  # (Ohm).
@@ -287,9 +287,9 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #                     # 0-indexed by channel number.
 #                     self.ALoadQHi = sp.fromstring(line, dtype=float, sep=',')
 #         # After the file has been read, perform some calculations.
-#         self.postRead(save_this)
+#         self.post_read(to_save)
 #
-#     def dimArrays(self):
+#     def init_array_dims(self):
 #         # Initialize numpy arrays and python lists as zeros.
 #         shape2D = (self.chCount, self.pktCount)
 #         # 0-indexed by packet number.
@@ -317,41 +317,41 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #         # 0-indexed by sample number.
 #         self.raw = sp.zeros((self.chCount, self.pktCount, self.n), dtype=float)
 #
-#     def str2DateTime(self, dTStr):
-#         YY = 2000 + int(dTStr.d[0: 0+2])
-#         MO = int(dTStr.d[2: 2+2])
-#         DD = int(dTStr.d[4: 4+2])
-#         HH = int(dTStr.t[0: 0+2])
-#         MM = int(dTStr.t[2: 2+2])
-#         SS = int(dTStr.t[4: 4+2])
-#         micro = 1000 * int(dTStr.t[7: 7+3])
+#     def string_to_datetime(self, date_time_string):
+#         YY = 2000 + int(date_time_string.d[0: 0+2])
+#         MO = int(date_time_string.d[2: 2+2])
+#         DD = int(date_time_string.d[4: 4+2])
+#         HH = int(date_time_string.t[0: 0+2])
+#         MM = int(date_time_string.t[2: 2+2])
+#         SS = int(date_time_string.t[4: 4+2])
+#         micro = 1000 * int(date_time_string.t[7: 7+3])
 #         if YY == 2000:
 #             return datetime.min
 #         else:
 #             return datetime(YY, MO, DD, HH, MM, SS, micro)
 #
-#     def computePhys(self, currentCh):
-#         self.meanPhys = self.pct2Phys(self.meanPct, currentCh)
-#         self.meanUpPhys = self.pct2Phys(self.meanUpPct, currentCh)
-#         self.meanDnPhys = self.pct2Phys(self.meanDnPct, currentCh)
+#     def compute_phys(self, channel):
+#         self.meanPhys = self.pct_to_phys(self.meanPct, channel)
+#         self.meanUpPhys = self.pct_to_phys(self.meanUpPct, channel)
+#         self.meanDnPhys = self.pct_to_phys(self.meanDnPct, channel)
 #
-#     def pct2Phys(self, pct, currentCh):
+#     def pct_to_phys(self, pct, channel):
 #         phys = sp.zeros_like(pct, dtype=float)
 #         for ch in range(self.chCount):
 #             phys[ch, :] = (pct[ch, :] / 100 *
 #                            self.ALoadQHi[ch] * self.In5BHi[ch] /
 #                            self.Out5BHi[ch])  # (V)
 #         # Convert the voltage on the current measurement channel to file_obj_array current.
-#         phys[currentCh, :] /= self.rCurrentMeas  # (A)
+#         phys[channel, :] /= self.rCurrentMeas  # (A)
 #         return phys
 #
-#     def countLines(self, fh):
+#     def count_lines(self, fh):
 #         # Counter lidx starts counting at 1 for the first line.
 #         for lidx, line in enumerate(fh, 1):
 #             pass
 #         return lidx
 #
-#     def postRead(self, save_this):
+#     def post_read(self, to_save):
 #         # Whether to correct for channel skew.
 #         corrChSkewBool = True
 #
@@ -362,16 +362,16 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #         # Other channels voltages are divided by this channel's current to find
 #         # impedance magnitude.
 #
-#         currentCh = 0
+#         channel = 0
 #
 #         # Flip voltage channels upside-down if requested.
-#         if save_this == 'upsideDown':
+#         if to_save == 'upsideDown':
 #             for ch in range(self.chCount):
-#                 if ch != currentCh:
+#                 if ch != channel:
 #                     self.raw[ch, ...] *= -1
 #                     self.raw[ch, ...] += 2**16 - 1
 #
-#         self.computePhys(currentCh)
+#         self.compute_phys(channel)
 #         # Compute FFTs.
 #         self.freq = spfftpack.fftfreq(self.n, 1 / self.fs, )  # (Hz)
 #         self.fft = spfftpack.fft(self.raw) / self.n
@@ -404,7 +404,7 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #         self.phaseDiff = sp.zeros_like(self.phase, dtype=float)
 #         for ch in range(self.chCount):
 #             self.phaseDiff[ch, :, :] = sp.subtract(self.phase[ch, :, :],
-#                                                    self.phase[currentCh, :, :])
+#                                                    self.phase[channel, :, :])
 #         self.phaseDiff[self.phaseDiff < -sp.pi] += 2*sp.pi
 #         self.phaseDiff[self.phaseDiff > sp.pi] -= 2*sp.pi
 #
@@ -416,7 +416,7 @@ def ipProcess(save_this, freq_span[1], save_phase=True, select_files=False):
 #         for ch in range(self.chCount):
 #             # (Ohm)
 #             self.zMag[ch, :, :] = sp.divide(self.magPhys[ch, :, :],
-#                                             self.magPhys[currentCh, :, :])
+#                                             self.magPhys[channel, :, :])
 #         # Convert to milliOhm.
 #         self.zMag *= 1000
 

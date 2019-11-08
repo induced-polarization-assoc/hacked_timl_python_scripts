@@ -13,36 +13,39 @@ import shutil
 import mipgui.yes_no_questions
 
 
-def make_data_dir_backup(data_folder_path, backup_root):
+def make_data_dir_backup(data_folder_path, backup_location):
     """
     .. make_data_folder_backup(data_folder_path)
 
     :param data_folder_path:
         Path --> for the raw data folder as defined by the user via the GUI.
-    :param backup_root:
+    :param backup_location:
         Path --> Path for the raw data backup folder -- essentially file_obj_array copy of the target folder for the analysis.
     :return status:
         Bool --> Success or failure status indicator code indicating if file_obj_array backup was successful.
     """
     current_time = str(datetime.datetime.now().time())
-    current_time.replace(':', '').replace(' ', '').replace('.', '')
+    time = current_time.replace(':', '').replace(' ', '').replace('.', '')
     backup_name = PurePath(data_folder_path).name
 
-    print(f"User has selected the path {backup_root} to save backups of the data files!")
+    print(f"User has selected the path {backup_location} to save backups of the data files!")
 
-    backup_name = backup_name + "_backup" + current_time
+    backup_name = f"{backup_name}_backup{time}"
 
-    print(f"Now making file_obj_array new backup directory called {backup_name} for you at {backup_root}...")
+    print(f"Now making file_obj_array new backup directory called {backup_name} for you at {backup_location}...")
 
-    backup_path = make_directory_at(backup_root, backup_name)
-    check_struct = check_output_structure(backup_path, data_folder_path, backup_root)
-    copy_backup_files()
-    val_copy = validate_file_copy()
+    success = copy_backup_files(data_folder_path, backup_location, backup_name)
 
-    if check_struct and val_copy:
-        return True
-    else:
-        return False
+    # backup_path = make_directory_at(backup_location, backup_name)
+    # check_struct = check_output_structure(backup_path, data_folder_path, backup_location)
+    # copy_backup_files()
+    # val_copy = validate_file_copy()
+    #
+    # if check_struct and val_copy:
+    #     return True
+    # else:
+    #     return False
+    return success
 
 
 def check_output_structure(backup_dir_path, data_folder_path, backup_path):
@@ -100,18 +103,31 @@ def copy_backup_files(source_dir, backup_root, backup_name):
         User-selected backup directory root
     :param backup_name:
         name of the backup directory as defined by the software (uses a time and date stamp)
+    :raises OSError:
+        In the case where the creation of the path failed, an OSError is raised and handled by printing
+        a status message to the user.
     :return:
         Return status (bool) or (NoneType)
     """
-    bu_dir = shutil.copytree(source_dir, backup_dir, symlinks=False, ignore=None)
-    return Path.is_dir(bu_dir)
+    backup_dir = make_directory_at(backup_root, backup_name)
+    path = backup_dir
+
+    try:
+        path = Path(shutil.copytree(source_dir, backup_dir, symlinks=False, ignore=None))
+    except OSError:
+        print(f"Unable to perform copy from\n {source_dir}\n to {path}")
+        # success = False
+    else:
+        print(f"Copy from\n {source_dir}\n to\n {path}\n was successful!")
+        # success = True
+    return Path.is_dir(path)
 
 
-def make_directory_at(dir_root_path, name, access_rights=777):
+def make_directory_at(dir_root_path, name):
     """
     .. function:: make_directory_at()
         Function that makes a directory with specific permissions at the parent location of the user's
-        choosing. 
+        choosing.
     :param dir_root_path:
         Root (parent) directory of the desired directory. Passed in from user input.
     :param name:
@@ -127,7 +143,7 @@ def make_directory_at(dir_root_path, name, access_rights=777):
     """
     dir_path = os.path.join(dir_root_path, name)
     try:
-        os.mkdir(dir_path, access_rights)
+        os.mkdir(dir_path)
     except OSError:
         print(f"Creation of the directory {dir_path} failed.")
     else:

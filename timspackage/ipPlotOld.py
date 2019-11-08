@@ -116,7 +116,7 @@ def plot3All(a, ps):
 
     Parameters
     ----------
-    a  : list of FileClass objects loaded from the .pkl file.
+    a  : list of fileclass objects loaded from the .pkl file.
       0-indexed list of all file data read and processed.
     ps : class containing plotting choices
       See construction in ipPlot()
@@ -173,7 +173,7 @@ def plot3Mean(a, ps):
 
     Parameters
     ----------
-    a  : list of FileClass objects loaded from the .pkl file.
+    a  : list of fileclass objects loaded from the .pkl file.
       0-indexed list of all file data read and processed.
     ps : class containing plotting choices
       See construction in ipPlot()
@@ -243,7 +243,7 @@ def plot1Mean(at, ps):
 
     Parameters
     ----------
-    at  : FileClass object.
+    at  : fileclass object.
     ps : class containing plotting choices
       See construction in ipPlot()
     '''
