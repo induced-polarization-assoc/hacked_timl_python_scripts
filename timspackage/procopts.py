@@ -13,4 +13,13 @@ class ProcOpts:
         """
         constructor
         """
-        pass
+        self.save_this = []
+        self.save_phase = True
+        self.min_freq = 0
+        self.max_freq = 0
+        self.frequency_span = 200
+        self.files_list = []
+
+
+if __name__ == '__main__':
+    procopts = ProcOpts

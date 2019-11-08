@@ -15,7 +15,9 @@ from tkinter import messagebox
 import mipgui.file_dialogs
 import marineiputils.file_utils
 import mipgui.yes_no_questions
-import timspackage.ipSurvey as ipSurvey
+from timspackage.session import Session as Session
+from timspackage.procopts import ProcOpts as ProcOpts
+from timspackage.analysisopts import AnalysisOptions as AnalysisOptions
 
 root = tkinter.Tk()
 
@@ -28,9 +30,10 @@ def main():
 
     :return:
     """
-    process, output = init_session()
-
-    return process, output
+    session = init_session()
+    procopts = set_up_processing_options()
+    analysisopts = choose_analysis_options()
+    return session, procopts
 
 
 def init_session():
@@ -38,32 +41,52 @@ def init_session():
     Set user preferences upon starting up the program.
     #FIXME: Perhaps this data should be stored in an object for faster referencing throughout the application
     :return:
+        session
     """
+    session = Session()
     # prompt the user to select the directory containing the raw data to be processed.
-    dir_to_process = mipgui.yes_no_questions.new_data_yesno()
-    if dir_to_process is not None:
-        print(f"The directory containing files to process is {dir_to_process}")
+    # session.process_yn = mipgui.yes_no_questions.new_data_yesno()
+    session.raw_data_path = mipgui.yes_no_questions.new_data_yesno()
+    if session.raw_data_path is not None:
+        print(f"The directory containing files to process is {session.raw_data_path}")
         # backup_location = mipgui.file_dialogs.set_backup_path(dir_to_process)
         # if backup_location is not None:
         #     # make the backups automagically.
         #     marineiputils.file_utils.make_data_dir_backup(dir_to_process, backup_location)
-    # else:
-        dir_to_process = None
-    #     print("Nothing to do here, then. Moving on to analysis...")
+        session.select_files = mipgui.file_dialogs.select_files_for_processing()
+        session.pickle_path = mipgui.file_dialogs.set_pickle_path()
+    else:
+        session.raw_data_path = None
+        print("Nothing to do here, then. Moving on to analysis...")
+        session.pickle_path = mipgui.file_dialogs.open_existing_pickle()
 
     # SET THE ANALYSIS PREFERENCES FOR THE SESSION
+    session.output_path = mipgui.yes_no_questions.save_yes_no()
     mipgui.file_dialogs.set_analysis_prefs()
 
-    # PROMPT THE USER IF THEY WANT TO SAVE THE OUTPUT AND IF SO, WHERE?
-    output_directory = mipgui.yes_no_questions.save_yes_no()
-    if output_directory is None:
-        print("There's really no point in just pulling the stuff up without saving it is there?")
-    else:
-        print(f"Saving the output of this analysis to the directory path: {output_directory}")
-        marineiputils.file_utils.construct_output_dir()
+    return session
 
-    return dir_to_process, output_directory
+
+def set_up_processing_options():
+    """
+
+    :returnprocopts:
+
+    """
+    procopts = ProcOpts()
+    procopts.
+    return procopts
+
+
+def choose_analysis_options():
+    """
+
+    :return analysisopts:
+
+    """
+    analysisopts = AnalysisOptions()
+    return analysisopts
 
 
 if __name__ == "__main__":
-    process, output = main()
+    process, pickle, output = main()
